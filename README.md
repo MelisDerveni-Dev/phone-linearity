@@ -6,6 +6,8 @@ A small laboratory for a big question: **can one affine model describe your phon
 
 **Initial milestone · 20 October 2026.** Report and demo foundations are ready for data collection. No phone measurements, fitted coefficients, empirical improvements, or confirmed failure cases are included yet. The required Python fitting package and analysis are scheduled after collection.
 
+**For teammates and coding agents:** read [AGENTS.md](AGENTS.md) first for the current status, architecture, scientific rules, collaboration workflow, and next milestones.
+
 ## Run the live observatory
 
 Install [Node.js](https://nodejs.org/) 22 or newer. No npm packages, API keys, online fonts or build step are needed.
