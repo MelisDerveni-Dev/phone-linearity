@@ -16,7 +16,15 @@ Install [Node.js](https://nodejs.org/) 22 or newer. No npm packages, API keys, o
 npm start
 ```
 
-The script opens `http://127.0.0.1:5173` in your browser. On Windows you can also run `scripts/start-live.ps1`. Keep the terminal running.
+**Windows PowerShell:** if `npm start` reports that `npm.ps1` cannot be loaded because running scripts is disabled, use the Windows command launcher instead:
+
+```powershell
+npm.cmd start
+```
+
+This does not require changing PowerShell's execution policy. You can also start the viewer directly with `node scripts/live.mjs`. Run these commands from the project root, where `package.json` lives.
+
+The script opens `http://127.0.0.1:5173` in your browser. On Windows, `scripts/start-live.ps1` is another option when your PowerShell policy allows scripts. Keep the terminal running.
 
 1. Connect phone and laptop to the same Wi-Fi or phone hotspot.
 2. In phyphox, select **Acceleration with g**. Enable **Allow remote access** in the experiment menu and keep the experiment open.
