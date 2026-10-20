@@ -52,12 +52,18 @@ test('mock-phone integration: incremental alignment, correction, start/stop and 
   const post=async(path,body)=>{const r=await fetch(appUrl+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await r.json();assert.equal(r.status,200,JSON.stringify(data));return data;};
   try {
     let s=await post('/api/connect',{url:phoneUrl});assert.equal(s.count,3);assert.equal(s.measuring,false);assert.deepEqual(s.points[0].raw,s.points[0].corrected);
+    const baseline=app.observatory.updates();
+    assert.equal(baseline.append,false);assert.equal(baseline.cursor,3);
     samples.push([.06,null,5,9.8],[.08,4,5,9.8]);
     await until(()=>app.observatory.snapshot().count===4);
+    const delta=app.observatory.updates({epoch:baseline.epoch,since:baseline.cursor});
+    assert.equal(delta.append,true);assert.equal(delta.points.length,1);assert.equal(delta.points[0].t,.08);
     assert.equal(app.observatory.snapshot().points.at(-1).t,.08);
     await delay(70);assert.equal(app.observatory.snapshot().count,4,'duplicate times must not accumulate');
     assert.ok(requests.some(u=>u.searchParams.get('accX')?.includes('|acc_time')),'incremental x uses time reference');
     s=await post('/api/calibration',{S:[[2,0,0],[0,1,0],[0,0,1]],b:[0,0,0]});assert.equal(s.points.at(-1).corrected[0],2);assert.equal(s.points.at(-1).raw[0],4);
+    const reprojected=app.observatory.updates({epoch:delta.epoch,since:delta.cursor});
+    assert.equal(reprojected.append,false);assert.notEqual(reprojected.epoch,delta.epoch);assert.equal(reprojected.points.at(-1).corrected[0],2);
     await post('/api/control',{cmd:'start'});await until(()=>app.observatory.snapshot().measuring);
     await post('/api/control',{cmd:'stop'});await until(()=>!app.observatory.snapshot().measuring);
     session='B';await until(()=>!app.observatory.snapshot().connected);s=app.observatory.snapshot();assert.equal(s.points.length,0);assert.match(s.error,/experiment changed/);
@@ -65,6 +71,35 @@ test('mock-phone integration: incremental alignment, correction, start/stop and 
     s=await post('/api/preview',{enabled:true});assert.equal(s.source,'synthetic');assert.ok(s.count>0);
     s=await post('/api/preview',{enabled:false});assert.equal(s.source,'none');assert.equal(s.points.length,0);
   } finally {app.observatory.close();await close(app.server);await close(phone);}
+});
+
+test('SSE delivers compact incremental samples independently to both windows',async()=>{
+  const app=createServer();const url=await listen(app.server);
+  const controllers=[];
+  async function open(){
+    const controller=new AbortController();controllers.push(controller);
+    const response=await fetch(url+'/api/events',{signal:controller.signal});
+    assert.match(response.headers.get('content-type'),/text\/event-stream/);
+    const reader=response.body.getReader();let buffer='';
+    return async()=>{
+      while(true){
+        const end=buffer.indexOf('\n\n');
+        if(end>=0){const frame=buffer.slice(0,end);buffer=buffer.slice(end+2);const line=frame.split('\n').find(l=>l.startsWith('data: '));if(line)return JSON.parse(line.slice(6));continue;}
+        const next=await reader.read();if(next.done)throw new Error('Stream ended');buffer+=new TextDecoder().decode(next.value);
+      }
+    };
+  }
+  try{
+    const nextA=await open(),nextB=await open();
+    assert.equal((await nextA()).source,'none');assert.equal((await nextB()).source,'none');
+    app.observatory.setPreview(true);
+    await nextA();await nextB(); // Disconnect/reset metadata before preview starts.
+    const a=await nextA(),b=await nextB();
+    assert.equal(a.source,'synthetic');assert.equal(a.append,true);assert.deepEqual(a.points,b.points);
+    const next=await nextA();assert.equal(next.append,true);assert.equal(next.points.length,3);assert.ok(next.cursor>a.cursor);
+    const compact=await fetch(url+'/api/preview?compact=1',{method:'POST',headers:{'content-type':'application/json'},body:'{"enabled":false}'});
+    assert.deepEqual(await compact.json(),{ok:true});
+  }finally{controllers.forEach(c=>c.abort());app.observatory.close();await close(app.server);}
 });
 
 test('HTTP surface serves local UI, rejects foreign origins and malformed JSON',async()=>{

@@ -36,3 +36,8 @@ Evidence: motion changes specific force and confounds gravity-only tilt; the bri
 Decision: record both contradictory deadline statements and confirm them with the course team; plan conservatively around 23 October until clarified.
 Alternatives: silently choose a date from the PDF.
 Evidence: the week table says Friday 23 October at 12:00; deliverable text says Friday 28 October at 08:00 (28 October 2026 is Wednesday) and gives different question durations.
+
+## 2026-10-20 — Live controls and rendering
+Decision: put large Start/Stop controls above both graph views; stream incremental updates over SSE, poll the phone up to 20 times per second, cache calibration/plot work, and preserve per-pixel trace extrema.
+Alternatives: sidebar-only controls, repeated full-history downloads, or smoothing measured values to hide roughness.
+Evidence: the display window hid the sidebar; a live session returned about 1.66 MB per full-history request. Browser QA with a 500 Hz mock phone passed both-window controls and rendering; mathematical samples remain unchanged. This improves the demo transport/display, not the scientific calibration.

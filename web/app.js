@@ -1,4 +1,5 @@
 /* Both windows read the same local bridge. No phone data leaves this machine. */
+import { lowerBound, mergeUpdate, traceForPixels } from './plot.mjs';
 const $ = (id) => document.getElementById(id);
 const AXES = [
   { key: 'x', label: 'X', color: '#347e75' },
@@ -8,12 +9,15 @@ const AXES = [
 const IDENTITY = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
 let state = { source: 'none', connected: false, points: [], calibration: {} };
 let requestPending = false;
-let pollPending = false;
+let stream = null;
 let bridgeUnavailable = false;
 let hoverTime = null;
 const chartGeometry = new WeakMap();
 let drawRequested = false;
 let lastRevision = null;
+let lastArrival = performance.now();
+let viewCache = null;
+const traceCache = new WeakMap();
 
 if (new URLSearchParams(location.search).get('display') === '1') {
   document.body.classList.add('display-mode');
@@ -54,11 +58,11 @@ function receive(payload) {
   const next = payload.state || payload;
   if (!Array.isArray(next.points)) return;
   if (bridgeUnavailable || (state.error && !next.error && $('error-banner')?.textContent === state.error)) showError('');
-  state = next;
-  if (!Array.isArray(state.points)) state.points = [];
+  if (next.cursor !== state.cursor || next.epoch !== state.epoch) lastArrival = performance.now();
+  state = mergeUpdate(state, next);
   bridgeUnavailable = false;
+  if ($('phone-url') && !$('phone-url').value && state.phoneUrl) $('phone-url').value = state.phoneUrl;
   updateReadouts();
-  requestDraw();
 }
 
 async function action(path, body) {
@@ -67,8 +71,7 @@ async function action(path, body) {
   showError('');
   updateReadouts();
   try {
-    receive(await api(path, body));
-    await poll();
+    await api(`${path}?compact=1`, body);
   } catch (error) {
     showError(error.message);
   } finally {
@@ -77,18 +80,18 @@ async function action(path, body) {
   }
 }
 
-async function poll() {
-  if (pollPending) return;
-  pollPending = true;
-  try {
-    receive(await api('/api/state'));
-  } catch (error) {
+function connectStream() {
+  stream?.close();
+  stream = new EventSource('/api/events');
+  stream.addEventListener('state', (event) => {
+    try { receive(JSON.parse(event.data)); }
+    catch { connectStream(); }
+  });
+  stream.onerror = () => {
     bridgeUnavailable = true;
     updateReadouts();
-    showError(`The local bridge is unavailable. Keep the launcher running. ${error.message}`);
-  } finally {
-    pollPending = false;
-  }
+    showError(`The local bridge is unavailable. Run npm start in the project folder, keep that terminal open, and open ${location.origin} in your browser. Reconnecting automatically…`);
+  };
 }
 
 function isIdentity(calibration) {
@@ -116,7 +119,7 @@ function updateReadouts() {
   const points = state.points;
   const latest = points.at(-1);
   const synthetic = state.source === 'synthetic';
-  const phone = state.connected && state.source === 'phone';
+  const phone = !bridgeUnavailable && state.connected && state.source === 'phone';
   const age = state.lastReceivedAt ? Math.max(0, Date.now() - state.lastReceivedAt) : null;
   let status = 'idle';
   let label = 'Ready for your experiment';
@@ -139,6 +142,11 @@ function updateReadouts() {
   setText('latency-value', phone && Number.isFinite(state.latencyMs) ? String(Math.round(state.latencyMs)) : '—');
   setText('last-value', age === null ? 'Awaiting data' : age < 1000 ? 'Just now'
     : `${Math.floor(age / 1000)} s ago`);
+  setText('measurement-state', bridgeUnavailable ? 'Reconnecting to the local bridge…'
+    : synthetic ? 'Synthetic preview · phone controls unavailable'
+      : !phone ? 'Connect your phone to begin'
+        : requestPending ? 'Sending command to phyphox…'
+          : state.measuring ? 'Recording live from your phone' : 'Phone connected · ready to start');
 
   AXES.forEach(({ key }, index) => {
     setText(`raw-${key}`, number(latest?.raw?.[index]));
@@ -163,13 +171,15 @@ function updateReadouts() {
     if ($(id)) $(id).disabled = requestPending;
   });
   if ($('disconnect-button')) $('disconnect-button').disabled = requestPending || !state.connected;
-  if ($('phone-start')) $('phone-start').disabled = requestPending || !phone;
-  if ($('phone-stop')) $('phone-stop').disabled = requestPending || !phone;
+  if ($('phone-start')) $('phone-start').disabled = requestPending || !phone || state.measuring;
+  if ($('phone-stop')) $('phone-stop').disabled = requestPending || !phone || !state.measuring;
+  for (const id of ['phone-start', 'phone-stop']) $(id)?.setAttribute('aria-busy', String(requestPending));
   if ($('calibration-reset')) $('calibration-reset').disabled = requestPending || identity || !calibration.S;
   ['raw-empty', 'calibrated-empty'].forEach((id) => { if ($(id)) $(id).hidden = !!latest; });
   if (state.error && !requestPending) showError(state.error);
-  if (lastRevision !== state.revision) {
-    lastRevision = state.revision;
+  const visualRevision = `${state.epoch}:${state.cursor}:${state.measuring}:${bridgeUnavailable}`;
+  if (lastRevision !== visualRevision) {
+    lastRevision = visualRevision;
     requestDraw();
   }
 }
@@ -182,10 +192,14 @@ function viewport() {
   const duration = Number($('time-window')?.value || 10);
   const points = state.points;
   const latest = points.at(-1)?.t || 0;
-  const end = Math.max(duration, latest);
+  // Move the clock between batches, but never extrapolate acceleration values.
+  const elapsed = !bridgeUnavailable && state.measuring && !state.error ? Math.min(150, performance.now() - lastArrival) / 1000 : 0;
+  const end = Math.max(duration, latest + elapsed);
   const start = end - duration;
   const axes = selectedAxes();
-  const visible = points.filter((point) => point.t >= start && point.t <= end);
+  const key = `${state.epoch}:${state.cursor}:${duration}:${axes.map(a=>a.key).join('')}:${$('scale-mode')?.value}`;
+  if (viewCache?.key === key) return { ...viewCache, start, end };
+  const visible = points.slice(Math.max(0, lowerBound(points, latest - duration) - 1));
   let extent = 12;
   if ($('scale-mode')?.value === 'fixed') extent = 20;
   else {
@@ -201,7 +215,8 @@ function viewport() {
       extent = Math.ceil(target / magnitude * 2) / 2 * magnitude;
     }
   }
-  return { start, end, duration, extent, axes, visible };
+  viewCache = { key, start, end, duration, extent, axes, visible };
+  return viewCache;
 }
 
 function requestDraw() {
@@ -212,6 +227,8 @@ function requestDraw() {
     const view = viewport();
     drawChart($('raw-chart'), 'raw', view);
     drawChart($('calibrated-chart'), 'corrected', view);
+    if (!document.hidden && !bridgeUnavailable && state.measuring && !state.error && state.points.length
+      && performance.now() - lastArrival < 150) requestDraw();
   });
 }
 
@@ -259,18 +276,24 @@ function drawChart(canvas, field, view) {
   }
   ctx.save();
   ctx.beginPath(); ctx.rect(pad.left, pad.top, pw, ph); ctx.clip();
-  for (const axis of view.axes) {
+  const cacheKey = `${view.key}:${Math.floor(pw)}`;
+  let traces = traceCache.get(canvas);
+  if (traces?.key !== cacheKey) {
+    traces = { key: cacheKey, axes: view.axes.map(axis => traceForPixels(view.visible, field, axis.index, Math.ceil(pw), view.start, view.duration)) };
+    traceCache.set(canvas, traces);
+  }
+  for (let axisIndex = 0; axisIndex < view.axes.length; axisIndex++) {
+    const axis = view.axes[axisIndex];
     ctx.beginPath();
     let previous = null;
     let count = 0;
-    for (const point of view.visible) {
-      const value = point[field]?.[axis.index];
+    for (const [time, value] of traces.axes[axisIndex]) {
       if (!Number.isFinite(value)) { previous = null; continue; }
-      const x = px(point.t);
+      const x = px(time);
       const y = py(value);
-      if (previous === null || point.t - previous > 1) ctx.moveTo(x, y);
+      if (previous === null || time - previous > 1) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
-      previous = point.t;
+      previous = time;
       count++;
     }
     ctx.strokeStyle = axis.color;
@@ -363,9 +386,10 @@ document.addEventListener('fullscreenchange', () => {
   if ('ResizeObserver' in window) new ResizeObserver(requestDraw).observe(canvas);
 });
 window.addEventListener('resize', requestDraw);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) poll(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { updateReadouts(); requestDraw(); } });
 updateReadouts();
 requestDraw();
-poll();
-setInterval(() => { if (!document.hidden) poll(); }, 250);
+connectStream();
 setInterval(updateReadouts, 1000);
+window.addEventListener('pagehide', () => stream?.close());
+window.addEventListener('pageshow', (event) => { if (event.persisted) connectStream(); });

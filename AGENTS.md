@@ -20,11 +20,12 @@ Implemented:
 - A Node.js standard-library bridge for phyphox remote access in `scripts/live.mjs`.
 - A dependency-free local dashboard in `web/`, with synchronized raw/corrected canvas graphs, a separate display window, fullscreen, axis/time/scale controls, stream states, calibration JSON import/reset, and an explicitly labelled synthetic preview.
 - A Windows launcher, collection protocol, metadata CSV headers, identity calibration JSON, decision log, and empty directories for future recordings/results.
-- Six Node tests, including a mock phyphox phone and known affine correction. Syntax and browser checks passed when the initial milestone was published.
+- Ten Node tests, including a mock phyphox phone, known affine correction, incremental streaming to two viewers, bounded client history and preservation of narrow trace extrema. Browser checks cover a 500 Hz mock stream, desktop/display/mobile controls and rendering. Physical phone connection and sample delivery were verified on 20 October; this is a connectivity check, not an archived experimental dataset.
+- Large Start/Stop controls above the graphs in both main and display views, plus incremental server-sent events and animated, cached canvas drawing.
 
 Not yet implemented or verified at this milestone:
 
-- Real phone recordings or a verified physical-phone connection.
+- Archived experimental phone recordings and validated scientific results. Live phone connectivity has been confirmed; planned collection is still separate.
 - The Python CSV loader, rest detector, least-squares fit/apply class, Python CLI, or pytest suite. `src/calib/__init__.py` is a placeholder only.
 - Fitted phone parameters, measured improvement, held-out metrics, evidence figures, or a confirmed failure case.
 
@@ -42,6 +43,7 @@ Data collection is planned for **21 October 2026**. The user explicitly deferred
 | `web/index.html` | Dashboard structure and element IDs used by `app.js`. |
 | `web/styles.css` | Established parchment, ink, brass, teal/coral and technical gear theme. |
 | `web/app.js` | Dashboard behavior, canvas rendering and separate display window. |
+| `web/plot.mjs` | Pure incremental-history and plotting helpers; preserve measured extrema, not averaged values. |
 | `tests/live.test.mjs` | Existing Node tests; these do not replace future required Python tests. |
 | `data/raw/` | Original phone exports. Treat their bytes as immutable. |
 | `data/recordings.csv` | One metadata row per real recording. Currently headers only. |
@@ -62,6 +64,8 @@ Do not silently change artifact ignore rules. When reproducible results exist, d
 - Use phyphox **Acceleration with g**. Gravity-removed acceleration is unsuitable for the planned static calibration. Discover buffer names through `/config`; preserve the explicit override for custom names.
 - Poll the phone serially with time-referenced incremental requests. Preserve timestamp/axis alignment, duplicate suppression, invalid-value handling, bounded history and session-change handling.
 - All windows read the same bridge state. `/api/state` supplies points shaped as `{t, raw: [x,y,z], corrected: [x,y,z]}` plus connection, source, timing, calibration and status metadata.
+- The UI uses `GET /api/events` (SSE), not repeated full-history polling. Initial/reset messages have `append: false`; subsequent messages append only new points. `epoch` changes on source/history resets or calibration changes; `cursor` is the count of accepted samples. Clients keep 32 seconds / at most 30,000 points. Slow connections resume with a snapshot when their cursor falls outside retained history. Preserve this contract and backpressure handling.
+- Mutations accept `?compact=1` to return a small acknowledgement; the shared event stream supplies the actual updated state. Keep phone requests serial, with up to 20 polls per second and a minimum gap between requests. Cache the calibration inverse rather than recomputing it for every sample.
 - Existing mutations are `POST /api/connect`, `/api/disconnect`, `/api/control`, `/api/calibration`, and `/api/preview`. Inspect the server for request/response details before changing callers.
 - Raw and corrected graphs must use the **same timestamps, visible axes, time limits and vertical scale**. Never make a correction appear better by changing one plot's scale.
 - Default correction is identity, explicitly labelled **uncalibrated**. Imports without the required fitted/provenance metadata are labelled **unverified**. Metadata is not proof that calibration works.
@@ -70,6 +74,7 @@ Do not silently change artifact ignore rules. When reproducible results exist, d
 - Connecting does not start or clear phone acquisition. Disconnecting the viewer does not stop the phone. Preserve explicit start/stop controls and avoid destructive remote clearing.
 - The viewer stores only an in-memory history of up to 120 seconds / 30,000 points. It is not a recording archive and must never write into `data/raw/`.
 - Keep the scientist-turning-gears design, responsive layouts, accessible controls and reduced-motion support. Coordinate any HTML ID changes with JavaScript selectors.
+- Keep Start/Stop above the graphs, visible in display mode and on mobile. Animate the time axis without inventing/extrapolating acceleration values. Cache and reduce dense plotted traces by pixel-column extrema so spikes survive; do not apply undocumented smoothing to make data look better.
 
 ## Scientific rules for the future implementation
 

@@ -29,10 +29,12 @@ The script opens `http://127.0.0.1:5173` in your browser. On Windows, `scripts/s
 1. Connect phone and laptop to the same Wi-Fi or phone hotspot.
 2. In phyphox, select **Acceleration with g**. Enable **Allow remote access** in the experiment menu and keep the experiment open.
 3. Copy the exact HTTP address displayed by phyphox into the dashboard and select **Connect**. Include the displayed port. Private IPv4 URLs are supported; do not infer the port from the phone type.
-4. Press **Start phone** in the dashboard or start the experiment on the phone. The viewer receives new samples about five times per second; the sensor may sample much faster. **Stop phone** pauses acquisition. Connecting alone never starts or clears the phone.
+4. Use the large **Start phone** and **Stop phone** buttons above the graphs. They are available in both the main dashboard and the display window. Start is enabled when the connected phone is paused; Stop is enabled while it is measuring. Connecting alone never starts or clears the phone.
 5. Select **Display window** to open both graphs together in a separate browser window. Move it to your presentation screen. Fullscreen and a compact display layout are available. Allow the popup if your browser blocks it.
 
 Raw and corrected graphs share time limits, axis visibility and vertical scale. The initial correction is **identity / uncalibrated**, so the graphs agree exactly. Once a real fit exists, load its JSON using **Load calibration** or the command below. Imported coefficients without training provenance are marked unverified; the viewer cannot establish their scientific validity.
+
+The bridge requests new phone samples up to 20 times per second, depending on network latency, and pushes incremental updates to each window over a persistent local event stream. Charts animate between batches at the browser's refresh rate. Dense traces retain per-pixel minima and maxima so narrow spikes remain visible; no sensor smoothing is applied. Each window keeps the latest 32 seconds for plotting, while the bridge retains its larger bounded history. A first connection/reconnection sends a window of history once; subsequent messages contain only new points and status.
 
 ```powershell
 npm start -- --phone http://192.168.1.42:8080 --calibration calibration/params.json
@@ -102,7 +104,7 @@ npm test
 npm run check
 ```
 
-Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
+Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
 
 ## Next milestone — after collection
 

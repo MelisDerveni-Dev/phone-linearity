@@ -32,10 +32,6 @@
             <button class="button button-secondary" id="disconnect-button" type="button" disabled>Disconnect</button>
           </div>
         </form>
-        <div class="phone-controls" role="group" aria-label="Phone measurement controls">
-          <button id="phone-start" type="button" disabled><span class="play-symbol" aria-hidden="true">▶</span> Start phone</button>
-          <button id="phone-stop" type="button" disabled><span aria-hidden="true">■</span> Stop phone</button>
-        </div>
       </section>
 
       <section class="control-section" aria-labelledby="calibration-heading">
@@ -76,6 +72,14 @@
         <div class="stream-clock"><span>LAST SAMPLE</span><strong id="last-value">—</strong></div>
       </section>
       <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+      <section class="acquisition-bar" aria-label="Phone measurement controls">
+        <div class="acquisition-copy"><span class="section-number">LIVE EXPERIMENT</span><strong id="measurement-state">Connect your phone to begin</strong></div>
+        <div class="acquisition-buttons">
+          <button id="phone-start" class="acquisition-button acquisition-start" type="button" disabled><span aria-hidden="true">▶</span> Start phone</button>
+          <button id="phone-stop" class="acquisition-button acquisition-stop" type="button" disabled><span aria-hidden="true">■</span> Stop phone</button>
+        </div>
+      </section>
 
       <section class="measurement-section" aria-labelledby="measurement-heading">
         <div class="measurement-toolbar"><div><h2 id="measurement-heading">The measurement bench</h2><p>Two views. The same time and vertical scale.</p></div><div class="plot-controls"><fieldset class="axis-controls"><legend class="visually-hidden">Visible axes</legend><label class="axis-label axis-x"><input id="axis-x" type="checkbox" checked><span class="axis-swatch"></span>X</label><label class="axis-label axis-y"><input id="axis-y" type="checkbox" checked><span class="axis-swatch"></span>Y</label><label class="axis-label axis-z"><input id="axis-z" type="checkbox" checked><span class="axis-swatch"></span>Z</label></fieldset><label class="select-label" for="time-window"><span>WINDOW</span><select id="time-window"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label><label class="select-label" for="scale-mode"><span>SCALE</span><select id="scale-mode"><option value="auto">Auto</option><option value="fixed">±20 m/s²</option></select></label></div></div>

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const identity = {name:'Identity — uncalibrated', fitted:false, units:'m/s^2', S:[[1,0,0],[0,1,0],[0,0,1]], b:[0,0,0]};
@@ -67,12 +68,23 @@ export function discoverBuffers(config, override) {
   return detected;
 }
 
-export function createObservatory({pollMs=200, defaultBuffers}={}) {
+export function createObservatory({pollMs=50, defaultBuffers}={}) {
   const state={connected:false,source:'none',phoneUrl:'',measuring:false,session:null,error:null,latencyMs:null,lastReceivedAt:null,calibration:structuredClone(identity),buffers:null,points:[],count:0,revision:0};
   let generation=0, timer=null, lastT=null, queue=Promise.resolve(), previewT=0;
+  let epoch=randomUUID(), inverse=inverse3(state.calibration.S);
+  const listeners=new Set();
   const snapshot=()=>({...state,points:state.points});
-  const reset=()=>{state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;};
-  const touch=()=>{state.revision++;};
+  const reset=()=>{epoch=randomUUID();state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;};
+  const updates=({since=-1,epoch:previousEpoch}={})=>{
+    const {points,...metadata}=state;
+    const oldest=state.count-points.length;
+    const append=previousEpoch===epoch && Number.isInteger(since) && since>=oldest && since<=state.count;
+    let first=append?since-oldest:0;
+    // New viewers need only the longest selectable plot window, not all history.
+    if(!append && points.length) {const cutoff=points.at(-1).t-32;while(first<points.length && points[first].t<cutoff)first++;}
+    return {...metadata,epoch,cursor:state.count,append,points:points.slice(first)};
+  };
+  const touch=()=>{state.revision++;for(const listener of listeners)listener();};
   const stop=()=>{generation++;clearTimeout(timer);timer=null;};
   const phoneRequest=(url,path)=>{
     const run=async()=>{
@@ -84,7 +96,8 @@ export function createObservatory({pollMs=200, defaultBuffers}={}) {
     };
     const job=queue.then(run,run);queue=job.catch(()=>{});return job;
   };
-  const append=(t,raw)=>{state.points.push({t,raw,corrected:correct(raw,state.calibration)});state.count++;lastT=t;state.lastReceivedAt=Date.now();};
+  const apply=raw=>inverse.map(row=>row.reduce((sum,v,j)=>sum+v*(raw[j]-state.calibration.b[j]),0));
+  const append=(t,raw)=>{state.points.push({t,raw,corrected:apply(raw)});state.count++;lastT=t;state.lastReceivedAt=Date.now();};
   const trim=()=>{if(!state.points.length)return;const min=state.points.at(-1).t-120;let n=0;while(n<state.points.length&&state.points[n].t<min)n++;if(n)state.points.splice(0,n);if(state.points.length>30000)state.points.splice(0,state.points.length-30000);};
   const poll=async(token)=>{
     if(token!==generation)return;
@@ -105,18 +118,18 @@ export function createObservatory({pollMs=200, defaultBuffers}={}) {
       // A full time update is sent by phyphox after clearing the experiment.
       if(lastT!==null && data.buffer[state.buffers.t].updateMode==='full' && arrays[0].length && arrays[0].at(-1)<lastT) reset();
       for(let i=0;i<arrays[0].length;i++) {
-        const t=arrays[0][i],raw=arrays.slice(1).map(a=>a[i]);
+        const t=arrays[0][i],raw=[arrays[1][i],arrays[2][i],arrays[3][i]];
         if(finite(t)&&raw.every(finite)&&(lastT===null||t>lastT))append(t,raw);
       }
       trim();state.error=null;
     } catch(error) {if(token!==generation)return;state.error=`${error.message} Keep phyphox open, enable remote access, and check that both devices share Wi-Fi.`;}
     touch();
-    if(token===generation)timer=setTimeout(()=>poll(token),pollMs);
+    if(token===generation)timer=setTimeout(()=>poll(token),Math.max(10,pollMs-(Date.now()-start)));
   };
   const preview=token=>{
     if(token!==generation)return;
-    for(let i=0;i<10;i++) {previewT+=0.02;const t=previewT;const angle=0.3*Math.sin(t*.7);append(t,[9.81*Math.sin(angle)+.08, .12*Math.sin(t*1.2)-.03,9.81*Math.cos(angle)+.05]);}
-    trim();touch();timer=setTimeout(()=>preview(token),200);
+    for(let i=0;i<3;i++) {previewT+=0.02;const t=previewT;const angle=0.3*Math.sin(t*.7);append(t,[9.81*Math.sin(angle)+.08, .12*Math.sin(t*1.2)-.03,9.81*Math.cos(angle)+.05]);}
+    trim();touch();timer=setTimeout(()=>preview(token),60);
   };
   const connect=async({url,buffers})=>{
     stop();reset();state.source='none';state.connected=false;state.measuring=false;state.error=null;state.session=null;state.latencyMs=null;
@@ -131,7 +144,7 @@ export function createObservatory({pollMs=200, defaultBuffers}={}) {
   const setPreview=enabled=>{
     disconnect();if(enabled){state.source='synthetic';state.measuring=true;state.session='synthetic-preview';state.latencyMs=null;previewT=0;preview(generation);}return snapshot();
   };
-  const calibrate=input=>{const c=validateCalibration(input);state.calibration=c;state.points=state.points.map(p=>({...p,corrected:correct(p.raw,c)}));touch();return snapshot();};
+  const calibrate=input=>{const c=validateCalibration(input);state.calibration=c;inverse=inverse3(c.S);epoch=randomUUID();state.points=state.points.map(p=>({...p,corrected:apply(p.raw)}));touch();return snapshot();};
   const control=async cmd=>{
     if(state.source!=='phone'||!state.connected)throw new Error('Connect a phone before starting or stopping its measurement.');
     if(!['start','stop'].includes(cmd))throw new Error('Only start and stop are supported.');
@@ -141,7 +154,7 @@ export function createObservatory({pollMs=200, defaultBuffers}={}) {
     // Actual measuring state comes from /get, including timed-run delays.
     touch();return snapshot();
   };
-  return {snapshot,connect,disconnect,setPreview,calibrate,control,close:stop};
+  return {snapshot,updates,subscribe:listener=>{listeners.add(listener);return()=>listeners.delete(listener);},connect,disconnect,setPreview,calibrate,control,close:stop};
 }
 
 export function createServer(options={}) {
@@ -155,6 +168,24 @@ export function createServer(options={}) {
       if(req.headers.origin && req.headers.origin!==`http://${host}`)return json(res,403,{error:'Cross-origin requests are not accepted.'});
       const url=new URL(req.url,`http://${host}`);
       if(req.method==='GET'&&url.pathname==='/api/state')return json(res,200,observatory.snapshot());
+      if(req.method==='GET'&&url.pathname==='/api/events') {
+        res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform','connection':'keep-alive','x-accel-buffering':'no'});
+        req.socket.setNoDelay(true);
+        res.flushHeaders();
+        res.write('retry: 1000\n\n');
+        let cursor=-1,epoch=null,blocked=false;
+        const send=()=>{
+          if(blocked||res.destroyed)return;
+          const update=observatory.updates({since:cursor,epoch});
+          blocked=!res.write(`event: state\ndata: ${JSON.stringify(update)}\n\n`);
+          cursor=update.cursor;epoch=update.epoch;
+        };
+        const unsubscribe=observatory.subscribe(send);
+        res.on('drain',()=>{blocked=false;send();});
+        const heartbeat=setInterval(()=>{if(!blocked&&!res.destroyed)blocked=!res.write(': heartbeat\n\n');},10000);
+        res.on('close',()=>{unsubscribe();clearInterval(heartbeat);});
+        send();return;
+      }
       if(req.method==='POST'&&url.pathname.startsWith('/api/')) {
         if(!req.headers['content-type']?.startsWith('application/json'))return json(res,415,{error:'Send application/json.'});
         let body='';for await(const chunk of req){body+=chunk;if(body.length>65536)return json(res,413,{error:'Request exceeds 64 KB.'});}
@@ -168,9 +199,9 @@ export function createServer(options={}) {
           case '/api/preview':if(typeof input.enabled!=='boolean')throw new Error('enabled must be boolean.');result=observatory.setPreview(input.enabled);break;
           default:return json(res,404,{error:'Unknown endpoint.'});
         }
-        return json(res,200,result);
+        return json(res,200,url.searchParams.has('compact')?{ok:true}:result);
       }
-      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/styles.css':['styles.css','text/css']};
+      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/styles.css':['styles.css','text/css']};
       if(req.method!=='GET'||!assets[url.pathname])return json(res,404,{error:'Not found.'});
       const [file,type]=assets[url.pathname];const content=await readFile(resolve(root,'web',file));
       res.writeHead(200,{'content-type':`${type}; charset=utf-8`,'cache-control':'no-cache','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"});res.end(content);
