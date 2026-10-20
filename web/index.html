@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#efeee6">
+  <meta name="description" content="A local laboratory for viewing phone accelerometer measurements and an affine calibration on the same clock and scale.">
+  <title>The Affine Observatory · Phone accelerometer laboratory</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#observatory">Skip to live graphs</a>
+  <div class="app-shell">
+    <aside class="instrument-panel" aria-label="Instrument controls">
+      <a class="wordmark" href="/" aria-label="The Affine Observatory home">
+        <svg class="brand-gear" viewBox="0 0 64 64" aria-hidden="true"><path d="M27 3h10l2 9 6 3 9-3 5 9-7 6v10l7 6-5 9-9-3-6 3-2 9H27l-2-9-6-3-9 3-5-9 7-6V27l-7-6 5-9 9 3 6-3Z"/><circle cx="32" cy="32" r="12"/><circle cx="32" cy="32" r="4"/></svg>
+        <span>AFFINE<br><span class="wordmark-sub">OBSERVATORY</span></span>
+      </a>
+      <div class="sidebar-rule"><span>INSTRUMENT NO. 01</span><span>↗</span></div>
+
+      <section class="control-section" aria-labelledby="connection-heading">
+        <div class="section-number">01 <span>THE CONNECTION</span></div>
+        <h2 id="connection-heading">Bring your phone<br>into the laboratory.</h2>
+        <p class="control-help">Open <strong>Acceleration with g</strong> in phyphox and enable remote access.</p>
+        <form id="connect-form">
+          <label class="field-label" for="phone-url">PHYPhOX REMOTE ADDRESS</label>
+          <input id="phone-url" name="phone-url" type="url" placeholder="http://192.168.1.100:8080" autocomplete="off" spellcheck="false" required aria-describedby="address-help">
+          <p id="address-help" class="input-hint">Use the address shown on your phone. Both devices need the same Wi-Fi.</p>
+          <div class="button-row">
+            <button class="button button-primary" id="connect-button" type="submit">Connect <span aria-hidden="true">↗</span></button>
+            <button class="button button-secondary" id="disconnect-button" type="button" disabled>Disconnect</button>
+          </div>
+        </form>
+        <div class="phone-controls" role="group" aria-label="Phone measurement controls">
+          <button id="phone-start" type="button" disabled><span class="play-symbol" aria-hidden="true">▶</span> Start phone</button>
+          <button id="phone-stop" type="button" disabled><span aria-hidden="true">■</span> Stop phone</button>
+        </div>
+      </section>
+
+      <section class="control-section" aria-labelledby="calibration-heading">
+        <div class="section-number">02 <span>THE CORRECTION</span></div>
+        <h2 id="calibration-heading">A better measure.</h2>
+        <div class="calibration-state"><span class="small-indicator" aria-hidden="true"></span><span id="calibration-status">Uncalibrated · identity</span></div>
+        <p class="control-help">Load fitted coefficients when they are ready. Until then, both graphs show the same signal.</p>
+        <label class="button button-upload" for="calibration-file"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m-4 4 4-4 4 4M3 12v5h14v-5"/></svg> Load calibration <span class="file-type">.JSON</span></label>
+        <input class="visually-hidden" id="calibration-file" type="file" accept=".json,application/json">
+        <div class="calibration-file-row"><span id="calibration-name">No fitted coefficients loaded</span><button id="calibration-reset" type="button" title="Reset to identity calibration" disabled>Reset</button></div>
+      </section>
+
+      <section class="preview-section" aria-label="Synthetic preview">
+        <button id="preview-button" class="preview-button" type="button" aria-pressed="false"><span class="preview-switch" aria-hidden="true"></span><span id="preview-label">Synthetic preview</span></button>
+        <p>Try the display without a phone.<br>Preview is simulated, never recorded.</p>
+      </section>
+      <footer class="sidebar-footer"><span class="tiny-gear" aria-hidden="true">⚙</span><span>A LITTLE CURIOSITY.<br>A MORE PRECISE WORLD.</span></footer>
+    </aside>
+
+    <main id="observatory" class="observatory">
+      <header class="topbar">
+        <span class="breadcrumb">PHONE SENSOR LAB <span>/</span> LIVE OBSERVATORY</span>
+        <div class="view-controls"><button id="popout-button" class="icon-button" type="button" title="Open the graphs in a separate window"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3h6v6m0-6-8 8M8 4H3v13h13v-5"/></svg><span>Display window</span></button><button id="fullscreen-button" class="icon-button" type="button" title="Enter full screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/></svg><span>Full screen</span></button></div>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> OBSERVE. QUESTION. CALIBRATE.</div><h1 id="page-title">The Affine<br><em>Observatory.</em></h1><p>One phone. Two perspectives.<br>Watch a measurement become a better measurement.</p></div>
+        <div class="hero-diagram" aria-label="Affine measurement model: measured acceleration equals S times reference acceleration plus b">
+          <svg class="diagram-gear gear-large" viewBox="0 0 128 128" aria-hidden="true"><path d="m56 5 16 0 3 15 9 4 13-8 11 11-8 13 4 9 15 3v16l-15 3-4 9 8 13-11 11-13-8-9 4-3 15H56l-3-15-9-4-13 8-11-11 8-13-4-9-15-3V52l15-3 4-9-8-13 11-11 13 8 9-4Z"/><circle cx="64" cy="60" r="32"/><circle cx="64" cy="60" r="13"/><path d="M64 28v19m0 26v19M32 60h19m26 0h19"/></svg>
+          <svg class="diagram-gear gear-small" viewBox="0 0 64 64" aria-hidden="true"><path d="M27 3h10l2 9 6 3 9-3 5 9-7 6v10l7 6-5 9-9-3-6 3-2 9H27l-2-9-6-3-9 3-5-9 7-6V27l-7-6 5-9 9 3 6-3Z"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="5"/></svg>
+          <span class="diagram-label label-measured">MEASUREMENT MODEL</span><div class="model-equation">m <span>=</span> Sx <span>+</span> b</div><span class="diagram-label label-corrected">CORRECTION: x̂ = S⁻¹(m − b)</span><span class="diagram-cross cross-one">+</span><span class="diagram-cross cross-two">+</span>
+        </div>
+      </section>
+
+      <section class="stream-strip" aria-label="Stream status">
+        <div id="connection-status" class="connection-status" data-state="idle"><span class="status-dot" aria-hidden="true"></span><span id="connection-label" role="status">Awaiting connection</span></div>
+        <span class="stream-source" id="source-label">No source</span>
+        <div class="stream-clock"><span>LAST SAMPLE</span><strong id="last-value">—</strong></div>
+      </section>
+      <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+      <section class="measurement-section" aria-labelledby="measurement-heading">
+        <div class="measurement-toolbar"><div><h2 id="measurement-heading">The measurement bench</h2><p>Two views. The same time and vertical scale.</p></div><div class="plot-controls"><fieldset class="axis-controls"><legend class="visually-hidden">Visible axes</legend><label class="axis-label axis-x"><input id="axis-x" type="checkbox" checked><span class="axis-swatch"></span>X</label><label class="axis-label axis-y"><input id="axis-y" type="checkbox" checked><span class="axis-swatch"></span>Y</label><label class="axis-label axis-z"><input id="axis-z" type="checkbox" checked><span class="axis-swatch"></span>Z</label></fieldset><label class="select-label" for="time-window"><span>WINDOW</span><select id="time-window"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label><label class="select-label" for="scale-mode"><span>SCALE</span><select id="scale-mode"><option value="auto">Auto</option><option value="fixed">±20 m/s²</option></select></label></div></div>
+
+        <div class="graph-grid">
+          <article class="graph-card raw-card" aria-labelledby="raw-title">
+            <header class="graph-header"><div><div class="graph-eyebrow">01 / THE SENSOR</div><h3 id="raw-title">Measured acceleration</h3></div><span class="graph-tag">RAW · m</span></header>
+            <div class="chart-wrap"><span class="chart-unit" aria-hidden="true">m/s²</span><canvas id="raw-chart" role="img" aria-label="Live raw acceleration graph for X, Y and Z. Numeric values appear below."></canvas><div id="raw-empty" class="chart-empty"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M2 22h13l5-13 10 25 9-28 7 16h16"/></svg><strong>A little motion starts here.</strong><span>Connect your phone and start measuring.</span></div></div>
+            <div class="axis-readouts" aria-label="Latest raw measurements"><div class="readout-axis-x"><span>X</span><strong id="raw-x">—</strong></div><div class="readout-axis-y"><span>Y</span><strong id="raw-y">—</strong></div><div class="readout-axis-z"><span>Z</span><strong id="raw-z">—</strong></div><div class="norm-readout"><span>|m|</span><strong id="raw-norm">—</strong></div></div>
+            <footer class="graph-footer"><span class="graph-footer-dot"></span>Exactly as reported by the phone <span>m/s²</span></footer>
+          </article>
+          <article class="graph-card calibrated-card" aria-labelledby="calibrated-title">
+            <header class="graph-header"><div><div class="graph-eyebrow">02 / THE MODEL</div><h3 id="calibrated-title">Corrected acceleration</h3></div><span class="graph-tag">AFFINE · x̂</span></header>
+            <div class="chart-wrap"><span class="chart-unit" aria-hidden="true">m/s²</span><canvas id="calibrated-chart" role="img" aria-label="Live affine-corrected acceleration graph for X, Y and Z. Numeric values appear below."></canvas><div id="calibrated-empty" class="chart-empty"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M2 22h13l5-13 10 25 9-28 7 16h16"/></svg><strong>A second perspective.</strong><span>The same signal, through your calibration.</span></div></div>
+            <div class="axis-readouts" aria-label="Latest corrected measurements"><div class="readout-axis-x"><span>X</span><strong id="corrected-x">—</strong></div><div class="readout-axis-y"><span>Y</span><strong id="corrected-y">—</strong></div><div class="readout-axis-z"><span>Z</span><strong id="corrected-z">—</strong></div><div class="norm-readout"><span>|x̂|</span><strong id="corrected-norm">—</strong></div></div>
+            <footer class="graph-footer"><span class="graph-footer-dot"></span>Affine correction · S⁻¹(m − b) <span>m/s²</span></footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="bench-notes" aria-label="Measurement notes and stream statistics"><div class="experiment-note"><span class="note-marker" aria-hidden="true">i</span><p><strong>Calibration is an experiment, not a promise.</strong><br>An affine model can correct scale, cross-axis mixing and offset. It cannot recover clipped or missing measurements.</p></div><dl class="stream-statistics"><div><dt>SAMPLES</dt><dd id="sample-count">0</dd></div><div><dt>SAMPLE RATE</dt><dd><span id="sample-rate">—</span><small> Hz</small></dd></div><div><dt>REQUEST TIME</dt><dd><span id="latency-value">—</span><small> ms</small></dd></div></dl></section>
+      <footer class="main-footer"><span>IS YOUR PHONE LINEAR? <span class="footer-separator">/</span> AN EXPERIMENT IN MEASUREMENT</span><span>BUILT FOR CURIOUS MINDS <span aria-hidden="true">✳</span></span></footer>
+    </main>
+  </div>
+</body>
+</html>
