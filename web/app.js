@@ -1,5 +1,6 @@
 /* Both windows read the same local bridge. No phone data leaves this machine. */
 import { lowerBound, mergeUpdate, traceForPixels } from './plot.mjs';
+import { createPresentation } from './presentation.mjs';
 const $ = (id) => document.getElementById(id);
 const AXES = [
   { key: 'x', label: 'X', color: '#347e75' },
@@ -18,6 +19,7 @@ let lastRevision = null;
 let lastArrival = performance.now();
 let viewCache = null;
 const traceCache = new WeakMap();
+const presentation = createPresentation({ getState: () => state, requestDraw });
 
 if (new URLSearchParams(location.search).get('display') === '1') {
   document.body.classList.add('display-mode');
@@ -177,6 +179,7 @@ function updateReadouts() {
   if ($('calibration-reset')) $('calibration-reset').disabled = requestPending || identity || !calibration.S;
   ['raw-empty', 'calibrated-empty'].forEach((id) => { if ($(id)) $(id).hidden = !!latest; });
   if (state.error && !requestPending) showError(state.error);
+  presentation.update(state);
   const visualRevision = `${state.epoch}:${state.cursor}:${state.measuring}:${bridgeUnavailable}`;
   if (lastRevision !== visualRevision) {
     lastRevision = visualRevision;
@@ -227,6 +230,7 @@ function requestDraw() {
     const view = viewport();
     drawChart($('raw-chart'), 'raw', view);
     drawChart($('calibrated-chart'), 'corrected', view);
+    presentation.draw(view);
     if (!document.hidden && !bridgeUnavailable && state.measuring && !state.error && state.points.length
       && performance.now() - lastArrival < 150) requestDraw();
   });

@@ -20,8 +20,9 @@ Implemented:
 - A Node.js standard-library bridge for phyphox remote access in `scripts/live.mjs`.
 - A dependency-free local dashboard in `web/`, with synchronized raw/corrected canvas graphs, a separate display window, fullscreen, axis/time/scale controls, stream states, calibration JSON import/reset, and an explicitly labelled synthetic preview.
 - A Windows launcher, collection protocol, metadata CSV headers, identity calibration JSON, decision log, and empty directories for future recordings/results.
-- Ten Node tests, including a mock phyphox phone, known affine correction, incremental streaming to two viewers, bounded client history and preservation of narrow trace extrema. Browser checks cover a 500 Hz mock stream, desktop/display/mobile controls and rendering. Physical phone connection and sample delivery were verified on 20 October; this is a connectivity check, not an archived experimental dataset.
+- Thirteen Node tests, including a mock phyphox phone, known affine correction, incremental streaming to two viewers, bounded client history, preservation of narrow trace extrema, signed inclination, and correction versus reference error. Browser checks cover a 500 Hz mock stream, desktop/display/mobile controls, rendering, reference gating, and settings shared across windows. Physical phone connection and sample delivery were verified on 20 October; this is a connectivity check, not an archived experimental dataset.
 - Large Start/Stop controls above the graphs in both main and display views, plus incremental server-sent events and animated, cached canvas drawing.
+- A presentation section with paired inclination dials, Tilt/X/Y/Z focus, correction/signal/reference-error views, and current-sample comparison cards. Original raw/corrected plots are retained in the expandable inspector below. This does not implement the deferred offline fitting or validation pipeline.
 
 Not yet implemented or verified at this milestone:
 
@@ -44,6 +45,8 @@ Data collection is planned for **21 October 2026**. The user explicitly deferred
 | `web/styles.css` | Established parchment, ink, brass, teal/coral and technical gear theme. |
 | `web/app.js` | Dashboard behavior, canvas rendering and separate display window. |
 | `web/plot.mjs` | Pure incremental-history and plotting helpers; preserve measured extrema, not averaged values. |
+| `web/comparison.mjs` | Pure signed inclination and current-sample comparison calculations. |
+| `web/presentation.mjs`, `web/presentation.css` | Presentation instruments, reference controls, focused graph, and cross-window settings. |
 | `tests/live.test.mjs` | Existing Node tests; these do not replace future required Python tests. |
 | `data/raw/` | Original phone exports. Treat their bytes as immutable. |
 | `data/recordings.csv` | One metadata row per real recording. Currently headers only. |
@@ -75,6 +78,8 @@ Do not silently change artifact ignore rules. When reproducible results exist, d
 - The viewer stores only an in-memory history of up to 120 seconds / 30,000 points. It is not a recording archive and must never write into `data/raw/`.
 - Keep the scientist-turning-gears design, responsive layouts, accessible controls and reduced-motion support. Coordinate any HTML ID changes with JavaScript selectors.
 - Keep Start/Stop above the graphs, visible in display mode and on mobile. Animate the time axis without inventing/extrapolating acceleration values. Cache and reduce dense plotted traces by pixel-column extrema so spikes survive; do not apply undocumented smoothing to make data look better.
+- Preserve the presentation's distinction between a correction and a measured error reduction. No reference is supplied by default. Reference error requires a user-entered independent reference and an explicit still-phone confirmation; use only samples after that confirmation. Changes to focus, direction, reference, calibration or stream invalidate the confirmed period. Do not retroactively assign the target to old motion.
+- The presentation cards describe the current sample, not held-out validation or RMSE. Show positive and negative error reductions honestly. Both dials use the same physical degree scale; both reference-error traces use a shared, explicitly labelled scale. Settings synchronize via the versioned localStorage key; backend stream data stays in the SSE contract.
 
 ## Scientific rules for the future implementation
 

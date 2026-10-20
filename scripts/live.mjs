@@ -201,7 +201,7 @@ export function createServer(options={}) {
         }
         return json(res,200,url.searchParams.has('compact')?{ok:true}:result);
       }
-      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/styles.css':['styles.css','text/css']};
+      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/comparison.mjs':['comparison.mjs','text/javascript'],'/presentation.mjs':['presentation.mjs','text/javascript'],'/presentation.css':['presentation.css','text/css'],'/styles.css':['styles.css','text/css']};
       if(req.method!=='GET'||!assets[url.pathname])return json(res,404,{error:'Not found.'});
       const [file,type]=assets[url.pathname];const content=await readFile(resolve(root,'web',file));
       res.writeHead(200,{'content-type':`${type}; charset=utf-8`,'cache-control':'no-cache','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"});res.end(content);

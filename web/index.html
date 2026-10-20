@@ -7,6 +7,7 @@
   <meta name="description" content="A local laboratory for viewing phone accelerometer measurements and an affine calibration on the same clock and scale.">
   <title>The Affine Observatory · Phone accelerometer laboratory</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/presentation.css">
   <script src="/app.js" type="module"></script>
 </head>
 <body>
@@ -81,6 +82,30 @@
         </div>
       </section>
 
+      <section id="presentation" class="presentation-section" aria-labelledby="presentation-title">
+        <div class="presentation-heading"><div><div class="eyebrow">THE CALIBRATION LENS</div><h2 id="presentation-title">Small changes. <em>In plain sight.</em></h2><p>One measurement, before and after. Give the difference room to speak.</p></div><span id="presentation-calibration" class="graph-tag">IDENTITY · UNCALIBRATED</span></div>
+        <div class="tilt-instruments">
+          <article class="tilt-card tilt-raw"><header><div><span class="graph-eyebrow">01 / BEFORE</span><h3>Raw inclination</h3></div><span class="instrument-dot"></span></header><div id="raw-dial" class="dial-art" aria-hidden="true"></div><div class="tilt-value"><strong id="raw-tilt">—</strong><span>°</span></div><p id="raw-target-note">Inclination along phone X</p></article>
+          <article class="tilt-card tilt-corrected"><header><div><span class="graph-eyebrow">02 / AFTER</span><h3>Corrected inclination</h3></div><span class="instrument-dot"></span></header><div id="corrected-dial" class="dial-art" aria-hidden="true"></div><div class="tilt-value"><strong id="corrected-tilt">—</strong><span>°</span></div><p id="corrected-target-note">Inclination along phone X</p></article>
+        </div>
+        <div class="reference-bench">
+          <label class="reference-field" for="tilt-direction"><span>SLOPE DIRECTION</span><select id="tilt-direction"><option value="x">Along phone X</option><option value="y">Along phone Y</option></select></label>
+          <label class="reference-field reference-value" for="reference-value"><span id="reference-label">RULER REFERENCE ANGLE</span><div><input id="reference-value" type="number" step="any" min="-90" max="90" placeholder="Not supplied" aria-describedby="reference-guidance"><span id="reference-unit">°</span></div></label>
+          <label class="reference-confirm"><input id="reference-confirm" type="checkbox" disabled><span>Phone held still<br>at this reference</span></label>
+          <button id="reference-clear" type="button" class="reference-clear">Clear reference</button>
+          <p id="reference-guidance">Enter an independently measured angle. Keep the phone supported and still; motion also changes acceleration.</p>
+        </div>
+        <article class="focus-card" aria-labelledby="focus-title">
+          <header class="focus-header"><div><div class="graph-eyebrow">03 / LOOK CLOSER</div><h3 id="focus-title">The correction applied</h3><p id="focus-subtitle">Corrected minus raw. A change in reading is not proof of improved accuracy.</p></div><div class="focus-controls"><fieldset class="focus-axis"><legend class="visually-hidden">Measurement to inspect</legend><label><input type="radio" name="focus" value="tilt" checked><span>Tilt</span></label><label><input type="radio" name="focus" value="x"><span>X</span></label><label><input type="radio" name="focus" value="y"><span>Y</span></label><label><input type="radio" name="focus" value="z"><span>Z</span></label></fieldset><label class="visually-hidden" for="focus-mode">Comparison view</label><select id="focus-mode"><option value="correction">Correction applied</option><option value="signal">Raw &amp; corrected</option><option value="error" disabled>Error vs reference</option></select><label class="visually-hidden" for="focus-window">Time window</label><select id="focus-window"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></div></header>
+          <div class="focus-legend"><span class="legend-raw" id="legend-raw">Raw</span><span class="legend-corrected" id="legend-corrected">Corrected</span><span class="legend-delta" id="legend-delta">Correction applied</span><span id="focus-scale-note">Shared scale · degrees</span></div>
+          <div class="focus-chart-wrap"><canvas id="focus-chart" role="img" aria-label="Focused comparison of raw and corrected measurements. Current values appear below."></canvas><div id="focus-empty" class="focus-empty">Connect your phone to bring the instruments to life.</div></div>
+          <div class="comparison-metrics"><div><span id="metric-raw-label">RAW ABSOLUTE ERROR</span><strong id="metric-raw">—</strong></div><div><span id="metric-corrected-label">CORRECTED ABSOLUTE ERROR</span><strong id="metric-corrected">—</strong></div><div><span id="metric-change-label">CORRECTION APPLIED</span><strong id="metric-change">—</strong></div></div>
+          <footer id="comparison-caption">No independent reference supplied. Error and improvement are not yet evaluated.</footer>
+        </article>
+      </section>
+
+      <details id="trace-inspector" class="trace-inspector">
+        <summary><span><strong>Full three-axis traces</strong><small>Open the original measurement bench for a closer inspection.</small></span><span class="inspector-toggle" aria-hidden="true">+</span></summary>
       <section class="measurement-section" aria-labelledby="measurement-heading">
         <div class="measurement-toolbar"><div><h2 id="measurement-heading">The measurement bench</h2><p>Two views. The same time and vertical scale.</p></div><div class="plot-controls"><fieldset class="axis-controls"><legend class="visually-hidden">Visible axes</legend><label class="axis-label axis-x"><input id="axis-x" type="checkbox" checked><span class="axis-swatch"></span>X</label><label class="axis-label axis-y"><input id="axis-y" type="checkbox" checked><span class="axis-swatch"></span>Y</label><label class="axis-label axis-z"><input id="axis-z" type="checkbox" checked><span class="axis-swatch"></span>Z</label></fieldset><label class="select-label" for="time-window"><span>WINDOW</span><select id="time-window"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="30">30 s</option></select></label><label class="select-label" for="scale-mode"><span>SCALE</span><select id="scale-mode"><option value="auto">Auto</option><option value="fixed">±20 m/s²</option></select></label></div></div>
 
@@ -101,6 +126,7 @@
       </section>
 
       <section class="bench-notes" aria-label="Measurement notes and stream statistics"><div class="experiment-note"><span class="note-marker" aria-hidden="true">i</span><p><strong>Calibration is an experiment, not a promise.</strong><br>An affine model can correct scale, cross-axis mixing and offset. It cannot recover clipped or missing measurements.</p></div><dl class="stream-statistics"><div><dt>SAMPLES</dt><dd id="sample-count">0</dd></div><div><dt>SAMPLE RATE</dt><dd><span id="sample-rate">—</span><small> Hz</small></dd></div><div><dt>REQUEST TIME</dt><dd><span id="latency-value">—</span><small> ms</small></dd></div></dl></section>
+      </details>
       <footer class="main-footer"><span>IS YOUR PHONE LINEAR? <span class="footer-separator">/</span> AN EXPERIMENT IN MEASUREMENT</span><span>BUILT FOR CURIOUS MINDS <span aria-hidden="true">✳</span></span></footer>
     </main>
   </div>

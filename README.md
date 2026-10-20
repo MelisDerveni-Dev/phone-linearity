@@ -36,6 +36,17 @@ Raw and corrected graphs share time limits, axis visibility and vertical scale. 
 
 The bridge requests new phone samples up to 20 times per second, depending on network latency, and pushes incremental updates to each window over a persistent local event stream. Charts animate between batches at the browser's refresh rate. Dense traces retain per-pixel minima and maxima so narrow spikes remain visible; no sensor smoothing is applied. Each window keeps the latest 32 seconds for plotting, while the bridge retains its larger bounded history. A first connection/reconnection sends a window of history once; subsequent messages contain only new points and status.
 
+## Present the calibration
+
+The presentation section pairs two inclination dials with a focused comparison graph. In **Display window**, the instruments and graph sit side by side on a wide screen. Expand **Full three-axis traces** below to inspect the original plots.
+
+1. Choose **Along phone X** or **Along phone Y** for the dials. These show signed inclination of that acceleration component relative to the other two components, from -90° to +90°. Keep the phone supported and still when interpreting this as tilt.
+2. Select **Tilt**, **X**, **Y** or **Z** in the comparison panel. **Correction applied** shows corrected minus raw on a tighter, explicitly labelled scale. **Raw & corrected** overlays just the selected measurement with a shared scale. Neither view alone establishes improved accuracy.
+3. For a reference comparison, enter an independently measured angle in degrees, or a known component value in m/s² for X/Y/Z. Confirm **Phone held still at this reference**, then start/resume the phone. The graph switches to **Error vs reference**, with zero as the reference line. A ruler-supported 0° is appropriate only when you have independently established that the selected slope is level.
+4. The cards show **current-sample** raw/corrected absolute errors and their difference. A positive reduction means less error; a negative value means more error. These are not held-out accuracy scores or aggregate validation results.
+
+Reference comparisons begin with fresh samples after confirmation. Uncheck the confirmation before moving the phone or changing the ramp. Changing the reference, focus, slope direction, calibration or stream resets the confirmation. Settings synchronize between windows in the same browser. With identity calibration, the dials match and the applied correction/error reduction is zero. Synthetic preview remains labelled; it never becomes phone evidence.
+
 ```powershell
 npm start -- --phone http://192.168.1.42:8080 --calibration calibration/params.json
 ```
@@ -104,7 +115,7 @@ npm test
 npm run check
 ```
 
-Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
+Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, the distinction between correction and reference error, and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
 
 ## Next milestone — after collection
 

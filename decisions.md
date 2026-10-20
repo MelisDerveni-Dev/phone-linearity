@@ -41,3 +41,8 @@ Evidence: the week table says Friday 23 October at 12:00; deliverable text says 
 Decision: put large Start/Stop controls above both graph views; stream incremental updates over SSE, poll the phone up to 20 times per second, cache calibration/plot work, and preserve per-pixel trace extrema.
 Alternatives: sidebar-only controls, repeated full-history downloads, or smoothing measured values to hide roughness.
 Evidence: the display window hid the sidebar; a live session returned about 1.66 MB per full-history request. Browser QA with a 500 Hz mock phone passed both-window controls and rendering; mathematical samples remain unchanged. This improves the demo transport/display, not the scientific calibration.
+
+## 2026-10-20 — Presentation and reference errors
+Decision: add paired inclination dials and one focused comparison panel above an expandable original trace inspector. Separate applied correction from error against an independent reference; start reference comparisons only with fresh samples after explicit still-phone confirmation.
+Alternatives: six simultaneous axis plots, exaggerating the corrected physical scale, or reporting a change in reading as an accuracy improvement.
+Evidence: the user found three overlaid axes hard to read and expected a small real correction. Unit/browser checks verify identity gives no improvement, references do not label earlier motion, negative reductions remain negative, and calibration changes invalidate the confirmed period. All experimental benefit remains unmeasured.
