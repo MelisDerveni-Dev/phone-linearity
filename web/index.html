@@ -161,6 +161,10 @@
           <strong>Ready when you move.</strong>
           <p>Start a phone measurement to see its tilt here. No motion is invented while we wait.</p>
         </div>
+        <div id="motion-warning" class="motion-warning" role="status" hidden>
+          <span class="motion-warning-symbol" aria-hidden="true">!</span>
+          <div><strong id="motion-warning-title">High motion · display paused</strong><p id="motion-warning-detail">Pose held by display policy. Live sensor data continues.</p></div>
+        </div>
       </div>
       <div class="motion-stage-footer"><span>DRAG TO ORBIT · FIXED REFERENCE PLANE</span><span>S25 ULTRA · 162.8 × 77.6 × 8.2 mm</span></div>
     </div>
@@ -179,9 +183,24 @@
     </aside>
   </div>
 
+  <details id="motion-setup" class="motion-setup" open>
+    <summary>Connect full orientation · scan with phyphox</summary>
+    <div class="motion-setup-content">
+    <a class="motion-qr" href="/motion-setup-qr.svg" target="_blank" rel="noopener" title="Open a larger QR code"><img src="/motion-setup-qr.svg" alt="Offline phyphox import QR for acceleration plus fused orientation" width="260" height="260"><span>Tap for a larger code · no internet needed</span></a>
+    <div>
+    <ol>
+      <li>Export your current phone recording. Return to the phyphox experiment list.</li>
+      <li>Tap <strong>+ → Add experiment from QR code</strong> and scan this code. It contains the complete motion experiment.</li>
+      <li>Open <strong>Affine Observatory – motion</strong>, enable remote access, then reconnect above and press Start phone.</li>
+    </ol>
+    <p>The source switches to Fused attitude when available. <a href="/experiments/observatory-motion.phyphox" download>Download the experiment file</a> if you prefer importing a file.</p>
+    </div>
+    </div>
+  </details>
+
   <footer class="motion-caption">
-    <p><strong>Gravity tilt becomes unreliable during acceleration.</strong> This is a tilt-estimation limit, not proof the affine sensor model failed. The S25 Ultra is an authored visual approximation at its published body proportions.</p>
-    <a class="motion-experiment-link" href="/experiments/observatory-motion.phyphox" download><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 11v3h10v-3"/></svg>Optional: fused-attitude experiment</a>
+    <p><strong>Gravity tilt becomes unreliable during acceleration.</strong> The red motion pause is an intentional display safeguard, not a detected sensor or affine-model failure; fused attitude may still track correctly. The S25 Ultra is an authored visual approximation at its published body proportions.</p>
+    <a class="motion-experiment-link" href="/experiments/observatory-motion.phyphox" download><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 11v3h10v-3"/></svg>Full rotation: motion experiment</a>
   </footer>
 </section>
 

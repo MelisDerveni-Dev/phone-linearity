@@ -7,4 +7,7 @@
 *.py text eol=lf
 *.ps1 text eol=crlf
 *.pdf binary
-data/raw/** -text
+# Preserve exported CRLF bytes; recognize CR as part of the line ending in checks.
+data/raw/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/processed/static-2026-10-21/training.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+data/processed/static-2026-10-21/testing.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

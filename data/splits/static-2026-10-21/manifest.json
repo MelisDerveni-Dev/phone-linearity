@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "source_sha256": {
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/Raw Data.csv": "b46d4e62a228f01cfe1b20f7dea1fc2f327b29eaafd71d4cde0d310454319d2c",
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/meta/time.csv": "35ca4eb5d0513c9d37acf8bfd55d030e01dbaa6fdf37b11d431e8c1d0c77c81a",
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/meta/device.csv": "6bde6af06c394b374bb41b7f8967d3e03aa9a8898af5aa98c0e2a3d4739d58bb"
+  },
+  "policy": "First complete recording of each consecutive pose pair trains; second tests. No random sample split.",
+  "boundary_convention": "[START, PAUSE), from meta/time.csv experiment time; wall-clock pauses are excluded by phyphox.",
+  "source_row_convention": "1-based data row, excluding the CSV header (physical line = source_row + 1).",
+  "pose_convention": "Dominant signed measured component from each complete recording's median; not an independent orientation measurement. Dominance >= 3 times the next component is an inventory guard, not a rest threshold.",
+  "preprocessing": "None. All rows and original five numeric strings retained; output adds provenance columns only.",
+  "ready_for_fitting": false,
+  "limitations": [
+    "First/second repeats come from one exported collection session, not independent sessions A/B.",
+    "Pause events alone do not establish that the phone was repositioned between same-pose repeats.",
+    "Support alignment, case configuration and user-selected sampling setting are unconfirmed.",
+    "Rest masks, independent ramp angles, limit experiments and calibration are pending."
+  ],
+  "audit": {
+    "samples": 172447,
+    "acquisition_duration_s": 364.3136336,
+    "median_sample_interval_s": 0.002111799999994446,
+    "max_sample_interval_s": 0.015074049999999062,
+    "nonfinite_values": 0,
+    "nonincreasing_timestamps": 0,
+    "unassigned_samples": 0,
+    "max_exported_magnitude_difference_m_s2": 9.895639863088945e-10
+  },
+  "outputs": {
+    "training": {
+      "path": "data/processed/static-2026-10-21/training.csv",
+      "samples": 86323,
+      "sha256": "c4a7e2bd8fb64e4fc407f06ad3846e03120c23ee1b30ca219960515afb66cb6a"
+    },
+    "testing": {
+      "path": "data/processed/static-2026-10-21/testing.csv",
+      "samples": 86124,
+      "sha256": "73bc13f77d24333bfa0a1708e05922d41eddda303650ddc12ee7e8427f4ffb17"
+    }
+  },
+  "segments": [
+    {
+      "segment_id": 1,
+      "start_s": 0.0,
+      "end_s": 29.34055853,
+      "duration_s": 29.34055853,
+      "wall_start": "2026-10-21 17:33:33.024 UTC+02:00",
+      "wall_end": "2026-10-21 17:34:02.364 UTC+02:00",
+      "pause_before_s": null,
+      "pose_observed": "+Y",
+      "samples": 13888,
+      "first_source_row": 1,
+      "last_source_row": 13888,
+      "first_sample_s": 0.011701094,
+      "last_sample_s": 29.33631901,
+      "median_xyz_m_s2": [
+        -0.1914258152,
+        9.8201437,
+        0.2105683982
+      ],
+      "std_xyz_m_s2": [
+        0.008048288987495798,
+        0.00812496272137195,
+        0.010120966527390043
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 2,
+      "start_s": 29.34055853,
+      "end_s": 59.08529269,
+      "duration_s": 29.744734160000004,
+      "wall_start": "2026-10-21 17:34:38.001 UTC+02:00",
+      "wall_end": "2026-10-21 17:35:07.746 UTC+02:00",
+      "pause_before_s": 35.63699984550476,
+      "pose_observed": "+Y",
+      "samples": 14080,
+      "first_source_row": 13889,
+      "last_source_row": 27968,
+      "first_sample_s": 29.35139306,
+      "last_sample_s": 59.08191796,
+      "median_xyz_m_s2": [
+        -0.2009970993,
+        9.8201437,
+        0.2679961324
+      ],
+      "std_xyz_m_s2": [
+        0.00929613628505734,
+        0.008417788241849777,
+        0.010191064568146266
+      ],
+      "repeat": 2,
+      "split": "testing"
+    },
+    {
+      "segment_id": 3,
+      "start_s": 59.08529269,
+      "end_s": 88.46938481,
+      "duration_s": 29.38409211999999,
+      "wall_start": "2026-10-21 17:35:26.569 UTC+02:00",
+      "wall_end": "2026-10-21 17:35:55.953 UTC+02:00",
+      "pause_before_s": 18.822999954223633,
+      "pose_observed": "-Y",
+      "samples": 13909,
+      "first_source_row": 27969,
+      "last_source_row": 41877,
+      "first_sample_s": 59.09514229,
+      "last_sample_s": 88.46493815,
+      "median_xyz_m_s2": [
+        -0.03349951655,
+        -9.757930756,
+        0.09571290761
+      ],
+      "std_xyz_m_s2": [
+        0.0078090817762018925,
+        0.008345012342004653,
+        0.010295635617956824
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 4,
+      "start_s": 88.46938481,
+      "end_s": 118.5038868,
+      "duration_s": 30.03450199000001,
+      "wall_start": "2026-10-21 17:36:03.162 UTC+02:00",
+      "wall_end": "2026-10-21 17:36:33.196 UTC+02:00",
+      "pause_before_s": 7.208999872207642,
+      "pose_observed": "-Y",
+      "samples": 14218,
+      "first_source_row": 41878,
+      "last_source_row": 56095,
+      "first_sample_s": 88.47829034,
+      "last_sample_s": 118.5007856,
+      "median_xyz_m_s2": [
+        -0.03349951655,
+        -9.757930756,
+        0.09571290761
+      ],
+      "std_xyz_m_s2": [
+        0.007879109320645197,
+        0.00859495691306124,
+        0.010193835190174734
+      ],
+      "repeat": 2,
+      "split": "testing"
+    },
+    {
+      "segment_id": 5,
+      "start_s": 118.5038868,
+      "end_s": 148.6443277,
+      "duration_s": 30.140440899999987,
+      "wall_start": "2026-10-21 17:37:04.435 UTC+02:00",
+      "wall_end": "2026-10-21 17:37:34.575 UTC+02:00",
+      "pause_before_s": 31.238999843597412,
+      "pose_observed": "-X",
+      "samples": 14267,
+      "first_source_row": 56096,
+      "last_source_row": 70362,
+      "first_sample_s": 118.515847,
+      "last_sample_s": 148.6420556,
+      "median_xyz_m_s2": [
+        -9.920642853,
+        0.0,
+        0.1292124242
+      ],
+      "std_xyz_m_s2": [
+        0.00789089847489511,
+        0.008083938229367099,
+        0.010156046721937137
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 6,
+      "start_s": 148.6443277,
+      "end_s": 178.3596633,
+      "duration_s": 29.715335600000003,
+      "wall_start": "2026-10-21 17:37:45.392 UTC+02:00",
+      "wall_end": "2026-10-21 17:38:15.108 UTC+02:00",
+      "pause_before_s": 10.816999912261963,
+      "pose_observed": "-X",
+      "samples": 14066,
+      "first_source_row": 70363,
+      "last_source_row": 84428,
+      "first_sample_s": 148.6542432,
+      "last_sample_s": 178.3562922,
+      "median_xyz_m_s2": [
+        -9.920642853,
+        0.0,
+        0.1292124242
+      ],
+      "std_xyz_m_s2": [
+        0.007822237678353517,
+        0.008080549556797741,
+        0.010148549492006546
+      ],
+      "repeat": 2,
+      "split": "testing"
+    },
+    {
+      "segment_id": 7,
+      "start_s": 178.3596633,
+      "end_s": 208.8979192,
+      "duration_s": 30.538255899999996,
+      "wall_start": "2026-10-21 17:38:32.330 UTC+02:00",
+      "wall_end": "2026-10-21 17:39:02.869 UTC+02:00",
+      "pause_before_s": 17.221999883651733,
+      "pose_observed": "+X",
+      "samples": 14455,
+      "first_source_row": 84429,
+      "last_source_row": 98883,
+      "first_sample_s": 178.3700519,
+      "last_sample_s": 208.893957,
+      "median_xyz_m_s2": [
+        9.69093132,
+        0.1100698411,
+        0.06699903309
+      ],
+      "std_xyz_m_s2": [
+        0.008066714285255103,
+        0.008193078379022719,
+        0.01022251837664262
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 8,
+      "start_s": 208.8979192,
+      "end_s": 239.0148214,
+      "duration_s": 30.1169022,
+      "wall_start": "2026-10-21 17:39:10.089 UTC+02:00",
+      "wall_end": "2026-10-21 17:39:40.206 UTC+02:00",
+      "pause_before_s": 7.2200000286102295,
+      "pose_observed": "+X",
+      "samples": 14256,
+      "first_source_row": 98884,
+      "last_source_row": 113139,
+      "first_sample_s": 208.9085921,
+      "last_sample_s": 239.0125656,
+      "median_xyz_m_s2": [
+        9.69093132,
+        0.1100698411,
+        0.06699903309
+      ],
+      "std_xyz_m_s2": [
+        0.008030276715683005,
+        0.00812481919839349,
+        0.01013615686128924
+      ],
+      "repeat": 2,
+      "split": "testing"
+    },
+    {
+      "segment_id": 9,
+      "start_s": 239.0148214,
+      "end_s": 271.0791233,
+      "duration_s": 32.064301900000004,
+      "wall_start": "2026-10-21 17:40:52.688 UTC+02:00",
+      "wall_end": "2026-10-21 17:41:24.753 UTC+02:00",
+      "pause_before_s": 72.48199987411499,
+      "pose_observed": "+Z",
+      "samples": 15176,
+      "first_source_row": 113140,
+      "last_source_row": 128315,
+      "first_sample_s": 239.0275926,
+      "last_sample_s": 271.0751367,
+      "median_xyz_m_s2": [
+        0.2297109663,
+        0.1531406492,
+        9.858428955
+      ],
+      "std_xyz_m_s2": [
+        0.007813270401408993,
+        0.00819290709841001,
+        0.011279793862364192
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 10,
+      "start_s": 271.0791233,
+      "end_s": 301.9951341,
+      "duration_s": 30.91601079999998,
+      "wall_start": "2026-10-21 17:41:29.961 UTC+02:00",
+      "wall_end": "2026-10-21 17:42:00.877 UTC+02:00",
+      "pause_before_s": 5.20799994468689,
+      "pose_observed": "+Z",
+      "samples": 14635,
+      "first_source_row": 128316,
+      "last_source_row": 142950,
+      "first_sample_s": 271.0877501,
+      "last_sample_s": 301.9929096,
+      "median_xyz_m_s2": [
+        0.2249253243,
+        0.1531406492,
+        9.858428955
+      ],
+      "std_xyz_m_s2": [
+        0.007929834954973193,
+        0.008162167245720196,
+        0.01100134950382752
+      ],
+      "repeat": 2,
+      "split": "testing"
+    },
+    {
+      "segment_id": 11,
+      "start_s": 301.9951341,
+      "end_s": 332.8989655,
+      "duration_s": 30.9038314,
+      "wall_start": "2026-10-21 17:42:12.892 UTC+02:00",
+      "wall_end": "2026-10-21 17:42:43.796 UTC+02:00",
+      "pause_before_s": 12.014999866485596,
+      "pose_observed": "-Z",
+      "samples": 14628,
+      "first_source_row": 142951,
+      "last_source_row": 157578,
+      "first_sample_s": 302.0062943,
+      "last_sample_s": 332.8967401,
+      "median_xyz_m_s2": [
+        -0.08135596663,
+        0.08614161611,
+        -9.729216576
+      ],
+      "std_xyz_m_s2": [
+        0.007786825228757721,
+        0.008183548520998144,
+        0.011170010568675299
+      ],
+      "repeat": 1,
+      "split": "training"
+    },
+    {
+      "segment_id": 12,
+      "start_s": 332.8989655,
+      "end_s": 364.3136336,
+      "duration_s": 31.41466810000003,
+      "wall_start": "2026-10-21 17:42:49.005 UTC+02:00",
+      "wall_end": "2026-10-21 17:43:20.419 UTC+02:00",
+      "pause_before_s": 5.209000110626221,
+      "pose_observed": "-Z",
+      "samples": 14869,
+      "first_source_row": 157579,
+      "last_source_row": 172447,
+      "first_sample_s": 332.9110397,
+      "last_sample_s": 364.3102373,
+      "median_xyz_m_s2": [
+        -0.08135596663,
+        0.08614161611,
+        -9.734002113
+      ],
+      "std_xyz_m_s2": [
+        0.007786213128318616,
+        0.008135478421561012,
+        0.010694384739686133
+      ],
+      "repeat": 2,
+      "split": "testing"
+    }
+  ]
+}

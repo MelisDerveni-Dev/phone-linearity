@@ -51,3 +51,38 @@ Evidence: the user found three overlaid axes hard to read and expected a small r
 Decision: add a locally authored S25 Ultra at Samsung's published body proportions, a fixed transparent plane, quaternion interpolation, gravity-only tilt, and an optional OS-fused attitude stream using an independent time buffer. Do not simulate a failure or extra lag when shaken.
 Alternatives: infer unobservable heading/position from acceleration, deliberately slow the model during shaking, or present tracker/display limitations as proof the affine sensor model failed.
 Evidence: the user requested a realistic moving phone and a shaking demonstration. Accelerometer-only data cannot separate arbitrary motion from gravity or determine heading; phyphox attitude supplies a separate fused estimate (official input documentation). Mock/browser tests cover pose changes, strong-motion labels, fused yaw, stale data and mobile rendering. Physical validation of the optional configuration and scientific model-failure evidence remain pending. Sources: https://phyphox.org/docs/file-format/input/ and https://www.samsung.com/ca/smartphones/galaxy-s25-ultra/specs/.
+
+## 2026-10-21 — First static export and complete-repeat split
+Decision: use the original phyphox START/PAUSE event log to partition all twelve acquisition runs. First of each consecutive pose pair trains; second tests. Keep every row and original numeric string, with source-row/run/split provenance. Version the script and compact audit; leave large derived CSVs ignored and reproducible. Do not fit, trim or resample at this stage.
+Alternatives: guess 30-second boundaries, randomly distribute correlated rows, call same-session repeats independent sessions, or infer true reference vectors from measured acceleration.
+Evidence: 172,447 finite rows; twelve event intervals of 29.34–32.06 s; measured pairs +Y, -Y, -X, +X, +Z, -Z. Training/testing counts are 86,323/86,124 with complete coverage and no overlap. The user's corrected intended pose list includes all six signed axes. Source SHA-256 and exact boundaries are recorded in `data/splits/static-2026-10-21/manifest.json`; five split tests verify preservation, boundaries, invalid input and repeat structure. One collection session limits independence; ramps, reference alignment, case/settings and rest masks remain pending.
+
+## 2026-10-21 — Smoother orientation and explicit full-rotation setup
+Decision: interpolate timestamped measured poses using a fixed 70 ms display buffer instead of easing toward only the last sample of each network delivery. Retain bounded intermediate attitude poses on their own clock. Continue gravity-based poses from their preceding orientation to avoid screen-down heading discontinuities; heading remains unobserved. Show explicit full-rotation setup when attitude is absent.
+Alternatives: increase smoothing lag, manufacture missing yaw from acceleration, extrapolate unmeasured poses, or silently alter the active phone experiment.
+Evidence: the live `/config` exposed only physical acceleration when the user reported rough two-axis tracking and a missing third rotation. Pure tests cover screen-down continuity, both observable complete rotations, buffered timing, endpoint clamping and duplicate arrivals; integration verifies attitude batch retention/reset. Browser checks with a separate 500 Hz mock phone verify model transforms, fused yaw, stale/paused states and mobile layout with no JavaScript exceptions. The physical combined experiment still needs import/verification. Source: https://phyphox.org/docs/file-format/input/.
+
+## 2026-10-21 — Full-orientation import and long-recording reconnect
+Decision: supply a static offline QR containing the combined experiment ZIP using phyphox's documented header/CRC32 format. Make the required phone-side import steps explicit. Bootstrap live connections from single latest timestamps and bounded recent windows, leaving the phone archive untouched.
+Alternatives: require internet hosting for experiment import, expose the localhost bridge on the LAN, pretend smoothing can recover heading, or clear a long recording to make reconnect work.
+Evidence: the user needs accurate full rotation; the active phone experiment exposes acceleration only. Restarting the bridge revealed an oversized full-history response. The new bootstrap has an integration test and the browser mock checks pass; the generator verifies its payload and ZIP round-trip. Physical QR import/full orientation still needs verification. Official formats: https://phyphox.org/docs/transferring-experiments/ and https://phyphox.org/docs/remote-interface/.
+
+## 2026-10-21 — Explicit motion pause requested by the user
+Decision: retain normal tracking during gentle movement, but hold the displayed pose with a red warning on strong acceleration or quaternion-derived speed above 240°/s (0.15 s window). Resume after 0.6 s of measured quiet time, with a 180 ms return blend. Mark it as an intentional display policy; fused attitude may still be accurate. Acquisition and graphs continue. The pulse is confined to one symbol at less than 1 Hz and respects reduced-motion settings.
+Alternatives: fabricate a sensor failure, present a UI hold as empirical affine-model breakdown, or continue tracking without the requested warning/hold.
+Evidence: the user reports that the phone now follows closely and explicitly requests stopping the model during fast motion. The thresholds are presentation heuristics, not measured performance limits. Three added tests check angular speed, quiet-time hysteresis, duplicate timestamps, missing/stale data and gravity-only recovery. Physical thresholds still need rehearsal; this change is not calibration evidence.
+
+## 2026-10-21 — More permissive motion pause and faster recovery
+Decision: at the user's request, raise the pause limits to current vector magnitude above 40 m/s² or angular speed above 720°/s. Remove the lower uncertainty-badge thresholds from the pause decision. Resume after 0.15 s below 30 m/s² and 180°/s, with an 80 ms return blend.
+Alternatives: retain the overly sensitive 1.5 m/s² deviation/variation trigger, or require complete stillness before resuming.
+Evidence: the user reports excessive freezing and specifically suggests magnitude above 40 and faster recovery. Updated tests check exact limits, continued tracking during vigorous motion, hysteresis, and prompt recovery while some movement remains. These remain presentation settings, not measured sensor-failure limits.
+
+## 2026-10-21 — Stronger signal required for the motion pause
+Decision: raise the vector-magnitude trigger from 40 to 60 m/s². Keep rotation at 720°/s and recovery at 0.15 s plus the 80 ms blend. No additional trigger delay is introduced.
+Alternatives: add a grace-period timer instead of increasing the required signal strength.
+Evidence: the user clarified that stronger signals should start the freeze and suggested 60. Tests cover continued tracking at 50 and exactly 60 m/s², plus triggering above 60 m/s². This remains a display threshold, not a measured sensor limit.
+
+## 2026-10-21 — Publish both dataset splits
+Decision: publish the original export and both generated static training/testing CSVs, together with the split script and audit. Add narrowly scoped ignore exceptions and disable Git text conversion for the two split CSVs so recorded hashes survive checkout on other systems. Other generated artifacts remain ignored.
+Alternatives: publish only the raw export and require teammates to regenerate the split CSVs.
+Evidence: the user explicitly requested pushing the datasets as well as the project changes. The manifest verifies source/output hashes and records complete, disjoint assignment of all 172,447 samples.

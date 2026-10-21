@@ -83,13 +83,13 @@ export function discoverAttitudeBuffers(config) {
 }
 
 export function createObservatory({pollMs=50, defaultBuffers}={}) {
-  const state={connected:false,source:'none',phoneUrl:'',measuring:false,session:null,error:null,latencyMs:null,lastReceivedAt:null,calibration:structuredClone(identity),buffers:null,points:[],count:0,revision:0,attitudeAvailable:false,orientation:null,orientationReceivedAt:null,orientationError:null};
+  const state={connected:false,source:'none',phoneUrl:'',measuring:false,session:null,error:null,latencyMs:null,lastReceivedAt:null,calibration:structuredClone(identity),buffers:null,points:[],count:0,revision:0,attitudeAvailable:false,orientation:null,orientationSamples:[],orientationReceivedAt:null,orientationError:null};
   let generation=0, timer=null, lastT=null, queue=Promise.resolve(), previewT=0;
   let attitudeBuffers=null,lastAttitudeT=null;
   let epoch=randomUUID(), inverse=inverse3(state.calibration.S);
   const listeners=new Set();
   const snapshot=()=>({...state,points:state.points});
-  const reset=()=>{epoch=randomUUID();state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;lastAttitudeT=null;state.orientation=null;state.orientationReceivedAt=null;state.orientationError=null;};
+  const reset=()=>{epoch=randomUUID();state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;lastAttitudeT=null;state.orientation=null;state.orientationSamples=[];state.orientationReceivedAt=null;state.orientationError=null;};
   const updates=({since=-1,epoch:previousEpoch}={})=>{
     const {points,...metadata}=state;
     const oldest=state.count-points.length;
@@ -118,6 +118,17 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
     if(token!==generation)return;
     const start=Date.now();
     try {
+      // Bootstrap from single latest timestamps. Fetch only the last 32 seconds
+      // of acceleration / 0.5 seconds of attitude, even on long phone recordings.
+      if(lastT===null||(attitudeBuffers&&lastAttitudeT===null)){
+        const clocks=[state.buffers.t,...(attitudeBuffers?[attitudeBuffers.t]:[])];
+        const latest=await phoneRequest(state.phoneUrl,`/get?${clocks.map(encodeURIComponent).join('&')}`);
+        if(token!==generation)return;
+        const acc=latest.buffer?.[state.buffers.t]?.buffer?.at(-1);
+        const att=attitudeBuffers?latest.buffer?.[attitudeBuffers.t]?.buffer?.at(-1):null;
+        if(lastT===null&&finite(acc))lastT=Math.max(-1,acc-32);
+        if(lastAttitudeT===null&&finite(att))lastAttitudeT=Math.max(-1,att-.5);
+      }
       const query=new URLSearchParams();
       for(const k of ['t','x','y','z']) query.set(state.buffers[k],lastT===null?'full':k==='t'?String(lastT):`${lastT}|${state.buffers.t}`);
       if(attitudeBuffers)for(const k of ['t','x','y','z','w'])query.set(attitudeBuffers[k],lastAttitudeT===null?'full':k==='t'?String(lastAttitudeT):`${lastAttitudeT}|${attitudeBuffers.t}`);
@@ -140,13 +151,14 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
       if(attitudeBuffers){
         const att=['t','x','y','z','w'].map(k=>data.buffer?.[attitudeBuffers[k]]?.buffer);
         if(att.every(Array.isArray)&&att.every(a=>a.length===att[0].length)){
-          if(att[0].length&&lastAttitudeT!==null&&data.buffer[attitudeBuffers.t].updateMode==='full'&&att[0].at(-1)<lastAttitudeT){lastAttitudeT=null;state.orientation=null;state.orientationReceivedAt=null;}
+          if(att[0].length&&lastAttitudeT!==null&&data.buffer[attitudeBuffers.t].updateMode==='full'&&att[0].at(-1)<lastAttitudeT){lastAttitudeT=null;state.orientation=null;state.orientationSamples=[];state.orientationReceivedAt=null;}
           for(let i=0;i<att[0].length;i++){
             const t=att[0][i],q=[att[1][i],att[2][i],att[3][i],att[4][i]],norm=Math.hypot(...q);
-            if(finite(t)&&q.every(finite)&&Number.isFinite(norm)&&norm>1e-6&&(lastAttitudeT===null||t>lastAttitudeT)){state.orientation={t,q:q.map(v=>v/norm),source:'attitude'};lastAttitudeT=t;state.orientationReceivedAt=Date.now();}
+            if(finite(t)&&q.every(finite)&&Number.isFinite(norm)&&norm>1e-6&&(lastAttitudeT===null||t>lastAttitudeT)){state.orientation={t,q:q.map(v=>v/norm),source:'attitude'};state.orientationSamples.push(state.orientation);lastAttitudeT=t;state.orientationReceivedAt=Date.now();}
           }
+          if(state.orientation)state.orientationSamples=state.orientationSamples.filter(p=>p.t>=state.orientation.t-.5).slice(-250);
           state.orientationError=null;
-        }else{state.orientation=null;state.orientationReceivedAt=null;state.orientationError='Attitude buffers are unavailable or not aligned.';}
+        }else{state.orientation=null;state.orientationSamples=[];state.orientationReceivedAt=null;state.orientationError='Attitude buffers are unavailable or not aligned.';}
       }
       trim();state.error=null;
     } catch(error) {if(token!==generation)return;state.error=`${error.message} Keep phyphox open, enable remote access, and check that both devices share Wi-Fi.`;}
@@ -232,7 +244,7 @@ export function createServer(options={}) {
         }
         return json(res,200,url.searchParams.has('compact')?{ok:true}:result);
       }
-      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/comparison.mjs':['comparison.mjs','text/javascript'],'/presentation.mjs':['presentation.mjs','text/javascript'],'/presentation.css':['presentation.css','text/css'],'/styles.css':['styles.css','text/css'],'/motion.mjs':['motion.mjs','text/javascript'],'/orientation.mjs':['orientation.mjs','text/javascript'],'/phone-model.mjs':['phone-model.mjs','text/javascript'],'/phone-model.css':['phone-model.css','text/css'],'/motion-stage.css':['motion-stage.css','text/css']};
+      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/comparison.mjs':['comparison.mjs','text/javascript'],'/presentation.mjs':['presentation.mjs','text/javascript'],'/presentation.css':['presentation.css','text/css'],'/styles.css':['styles.css','text/css'],'/motion.mjs':['motion.mjs','text/javascript'],'/orientation.mjs':['orientation.mjs','text/javascript'],'/phone-model.mjs':['phone-model.mjs','text/javascript'],'/phone-model.css':['phone-model.css','text/css'],'/motion-stage.css':['motion-stage.css','text/css'],'/motion-setup-qr.svg':['motion-setup-qr.svg','image/svg+xml']};
       if(req.method!=='GET'||!assets[url.pathname])return json(res,404,{error:'Not found.'});
       const [file,type]=assets[url.pathname];const content=await readFile(resolve(root,'web',file));
       res.writeHead(200,{'content-type':`${type}; charset=utf-8`,'cache-control':'no-cache','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"});res.end(content);

@@ -112,7 +112,30 @@ test('HTTP surface serves local UI, rejects foreign origins and malformed JSON',
     assert.equal((await fetch(url+'/missing')).status,404);
     const experiment=await fetch(url+'/experiments/observatory-motion.phyphox');
     assert.equal(experiment.status,200);assert.match(experiment.headers.get('content-disposition'),/observatory-motion/);assert.match(await experiment.text(),/sensor type="attitude"/);
+    const qr=await fetch(url+'/motion-setup-qr.svg');assert.equal(qr.status,200);assert.match(qr.headers.get('content-type'),/image\/svg\+xml/);assert.match(await qr.text(),/<svg/);
   }finally{app.observatory.close();await close(app.server);}
+});
+
+test('reconnecting to long recordings bootstraps from single clocks and requests bounded recent history',async()=>{
+  const requests=[];
+  const phone=http.createServer((req,res)=>{
+    const url=new URL(req.url,'http://localhost');requests.push(url);res.setHeader('content-type','application/json');
+    if(url.pathname==='/config')return res.end(JSON.stringify(config));
+    assert.ok(![...url.searchParams.values()].includes('full'),'never download a long full recording');
+    if(url.searchParams.size===1)return res.end(JSON.stringify({buffer:{acc_time:{buffer:[12000],updateMode:'single'}},status:{session:'long',measuring:true}}));
+    const cutoff=Number(url.searchParams.get('acc_time'));
+    const times=[100,11960,11970,11990,12000].filter(t=>t>cutoff);
+    const buffer=Object.fromEntries(['acc_time','accX','accY','accZ'].map((name,i)=>[name,{buffer:times.map(t=>i===0?t:i===3?9.81:0),updateMode:'partial'}]));
+    res.end(JSON.stringify({buffer,status:{session:'long',measuring:true}}));
+  });
+  const phoneUrl=await listen(phone),app=createServer();
+  try{
+    const state=await app.observatory.connect({url:phoneUrl});
+    assert.equal(state.error,null);assert.equal(state.measuring,true);
+    assert.deepEqual(state.points.map(p=>p.t),[11970,11990,12000]);
+    assert.ok(requests.some(u=>u.searchParams.get('accX')==='11968|acc_time'));
+    assert.ok(!requests.some(u=>u.pathname==='/control'),'reconnect never stops or clears acquisition');
+  }finally{app.observatory.close();await close(phone);}
 });
 
 test('optional fused attitude uses its own clock and does not pair by acceleration indices',async()=>{
@@ -136,10 +159,16 @@ test('optional fused attitude uses its own clock and does not pair by accelerati
     const response=await fetch(url+'/api/connect',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:phoneUrl})});
     const initial=await response.json();assert.equal(initial.count,3);assert.equal(initial.attitudeAvailable,true);
     assert.deepEqual(initial.orientation.q,[0,0,0,1]);assert.equal(initial.orientation.t,.015);
-    attitude.push([.035,0,0,Math.SQRT1_2,Math.SQRT1_2]);
+    assert.equal(initial.orientationSamples.length,1);
+    attitude.push([.025,0,0,Math.sin(.2),Math.cos(.2)],[.035,0,0,Math.SQRT1_2,Math.SQRT1_2]);
     await until(()=>app.observatory.snapshot().orientation.t===.035);
+    assert.deepEqual(app.observatory.snapshot().orientationSamples.map(p=>p.t),[.015,.025,.035],'retain intermediate attitude poses within each batch');
     assert.equal(app.observatory.snapshot().count,3,'new attitude does not fabricate acceleration samples');
     assert.ok(seen.some(u=>u.searchParams.get('attX')==='.015|attT'||u.searchParams.get('attX')==='0.015|attT'));
+    attitude.push([1,0,0,0,1]);
+    await until(()=>app.observatory.snapshot().orientation.t===1);
+    assert.deepEqual(app.observatory.snapshot().orientationSamples.map(p=>p.t),[1],'history remains bounded in sensor time');
     app.observatory.disconnect();assert.equal(app.observatory.snapshot().orientation,null);assert.equal(app.observatory.snapshot().attitudeAvailable,false);
+    assert.deepEqual(app.observatory.snapshot().orientationSamples,[]);
   }finally{app.observatory.close();await close(app.server);await close(phone);}
 });
