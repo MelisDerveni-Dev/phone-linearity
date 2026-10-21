@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<phyphox version="1.15">
+  <title>Affine Observatory - motion</title>
+  <category>Raw Sensors</category>
+  <description>Acceleration with gravity plus optional device-fused attitude for the local Affine Observatory. Use acceleration for calibration; attitude is a separate orientation estimate, not ground truth. Remote access must be enabled in this experiment. Acceleration rate requested: 100 Hz; attitude: 50 Hz. Keep settings consistent across scientific recordings.</description>
+  <data-containers>
+    <container size="0">acc_time</container><container size="0">accX</container><container size="0">accY</container><container size="0">accZ</container>
+    <container size="0">att_time</container><container size="0">attX</container><container size="0">attY</container><container size="0">attZ</container><container size="0">attW</container>
+  </data-containers>
+  <input>
+    <sensor type="accelerometer" rate="100" average="false">
+      <output component="t">acc_time</output><output component="x">accX</output><output component="y">accY</output><output component="z">accZ</output>
+    </sensor>
+    <sensor type="attitude" rate="50" average="false" ignoreUnavailable="true">
+      <output component="t">att_time</output><output component="x">attX</output><output component="y">attY</output><output component="z">attZ</output><output component="abs">attW</output>
+    </sensor>
+  </input>
+  <views>
+    <view label="Acceleration with g">
+      <graph label="Acceleration with gravity" timeOnX="true" labelX="Time (s)" labelY="Acceleration (m/s²)">
+        <input axis="x">acc_time</input><input axis="y">accX</input>
+        <input axis="x">acc_time</input><input axis="y">accY</input>
+        <input axis="x">acc_time</input><input axis="y">accZ</input>
+      </graph>
+      <value label="x" unit="m/s²"><input>accX</input></value>
+      <value label="y" unit="m/s²"><input>accY</input></value>
+      <value label="z" unit="m/s²"><input>accZ</input></value>
+    </view>
+    <view label="Fused attitude">
+      <value label="Quaternion x"><input>attX</input></value><value label="Quaternion y"><input>attY</input></value>
+      <value label="Quaternion z"><input>attZ</input></value><value label="Quaternion w"><input>attW</input></value>
+    </view>
+  </views>
+  <export>
+    <set name="Acceleration with g"><data name="Time (s)">acc_time</data><data name="Acceleration x (m/s^2)">accX</data><data name="Acceleration y (m/s^2)">accY</data><data name="Acceleration z (m/s^2)">accZ</data></set>
+    <set name="Fused attitude"><data name="Time (s)">att_time</data><data name="Quaternion x">attX</data><data name="Quaternion y">attY</data><data name="Quaternion z">attZ</data><data name="Quaternion w">attW</data></set>
+  </export>
+</phyphox>

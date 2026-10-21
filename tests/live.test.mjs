@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createServer,correct,validateCalibration,normalizePhoneUrl,discoverBuffers} from '../scripts/live.mjs';
+import {createServer,correct,validateCalibration,normalizePhoneUrl,discoverBuffers,discoverAttitudeBuffers} from '../scripts/live.mjs';
 
 const config={title:'Acceleration with g',inputs:[{source:'accelerometer',outputs:[{x:'accX'},{y:'accY'},{z:'accZ'},{t:'acc_time'}]}],buffers:['accX','accY','accZ','acc_time'].map(name=>({name,size:0}))};
 const listen=server=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(`http://127.0.0.1:${server.address().port}`)));
@@ -110,5 +110,36 @@ test('HTTP surface serves local UI, rejects foreign origins and malformed JSON',
     assert.equal((await fetch(url+'/api/preview',{method:'POST',headers:{'content-type':'application/json',origin:'https://unrelated.example'},body:'{"enabled":true}'})).status,403);
     assert.equal((await fetch(url+'/api/preview',{method:'POST',headers:{'content-type':'application/json'},body:'bad json'})).status,400);
     assert.equal((await fetch(url+'/missing')).status,404);
+    const experiment=await fetch(url+'/experiments/observatory-motion.phyphox');
+    assert.equal(experiment.status,200);assert.match(experiment.headers.get('content-disposition'),/observatory-motion/);assert.match(await experiment.text(),/sensor type="attitude"/);
   }finally{app.observatory.close();await close(app.server);}
+});
+
+test('optional fused attitude uses its own clock and does not pair by acceleration indices',async()=>{
+  const attNames={t:'attT',x:'attX',y:'attY',z:'attZ',w:'attW'};
+  const combined={...config,inputs:[...config.inputs,{source:'attitude',outputs:[{t:'attT'},{x:'attX'},{y:'attY'},{z:'attZ'},{abs:'attW'}]}],buffers:[...config.buffers,...Object.values(attNames).map(name=>({name,size:0}))]};
+  assert.deepEqual(discoverAttitudeBuffers(combined),attNames);assert.equal(discoverAttitudeBuffers(config),null);
+  assert.equal(discoverAttitudeBuffers({...combined,buffers:combined.buffers.filter(b=>b.name!=='attW')}),null);
+  let attitude=[[.015,0,0,0,2]],seen=[];
+  const phone=http.createServer((req,res)=>{
+    const url=new URL(req.url,'http://localhost');seen.push(url);res.setHeader('content-type','application/json');
+    if(url.pathname==='/config')return res.end(JSON.stringify(combined));
+    const buffer={};
+    for(const [names,samples] of [[['acc_time','accX','accY','accZ'],[[0,0,0,9.81],[.02,0,0,9.81],[.04,0,0,9.81]]],[Object.values(attNames),attitude]]){
+      const threshold=url.searchParams.get(names[0]),rows=threshold==='full'?samples:samples.filter(p=>p[0]>Number(threshold));
+      names.forEach((name,i)=>buffer[name]={buffer:rows.map(p=>p[i]),updateMode:threshold==='full'?'full':'partial',size:0});
+    }
+    res.end(JSON.stringify({buffer,status:{session:'with-attitude',measuring:true}}));
+  });
+  const phoneUrl=await listen(phone),app=createServer({pollMs:20});const url=await listen(app.server);
+  try{
+    const response=await fetch(url+'/api/connect',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({url:phoneUrl})});
+    const initial=await response.json();assert.equal(initial.count,3);assert.equal(initial.attitudeAvailable,true);
+    assert.deepEqual(initial.orientation.q,[0,0,0,1]);assert.equal(initial.orientation.t,.015);
+    attitude.push([.035,0,0,Math.SQRT1_2,Math.SQRT1_2]);
+    await until(()=>app.observatory.snapshot().orientation.t===.035);
+    assert.equal(app.observatory.snapshot().count,3,'new attitude does not fabricate acceleration samples');
+    assert.ok(seen.some(u=>u.searchParams.get('attX')==='.015|attT'||u.searchParams.get('attX')==='0.015|attT'));
+    app.observatory.disconnect();assert.equal(app.observatory.snapshot().orientation,null);assert.equal(app.observatory.snapshot().attitudeAvailable,false);
+  }finally{app.observatory.close();await close(app.server);await close(phone);}
 });

@@ -20,9 +20,10 @@ Implemented:
 - A Node.js standard-library bridge for phyphox remote access in `scripts/live.mjs`.
 - A dependency-free local dashboard in `web/`, with synchronized raw/corrected canvas graphs, a separate display window, fullscreen, axis/time/scale controls, stream states, calibration JSON import/reset, and an explicitly labelled synthetic preview.
 - A Windows launcher, collection protocol, metadata CSV headers, identity calibration JSON, decision log, and empty directories for future recordings/results.
-- Thirteen Node tests, including a mock phyphox phone, known affine correction, incremental streaming to two viewers, bounded client history, preservation of narrow trace extrema, signed inclination, and correction versus reference error. Browser checks cover a 500 Hz mock stream, desktop/display/mobile controls, rendering, reference gating, and settings shared across windows. Physical phone connection and sample delivery were verified on 20 October; this is a connectivity check, not an archived experimental dataset.
+- Twenty-four Node tests, including affine application, streaming, plotting, inclination, independent attitude timestamps, quaternion tracking, and the phone-model frame convention/dimensions. Browser checks cover a 500 Hz mock stream, presentation controls, 3D start/pause, changing faces, motion indicators, fused yaw, stale data, and mobile layouts. Physical accelerometer connection and sample delivery were verified on 20 October; this is a connectivity check, not an archived experimental dataset. The optional custom motion configuration still needs physical-phone import/verification.
 - Large Start/Stop controls above the graphs in both main and display views, plus incremental server-sent events and animated, cached canvas drawing.
 - A presentation section with paired inclination dials, Tilt/X/Y/Z focus, correction/signal/reference-error views, and current-sample comparison cards. Original raw/corrected plots are retained in the expandable inspector below. This does not implement the deferred offline fitting or validation pipeline.
+- A 3D S25 Ultra motion bench below the original traces, added on 21 October at the user's request with separate model and stage agents. It follows calibrated gravity tilt with optional device-fused attitude. A transparent plane, camera orbit/reset, state indicators and normal quaternion easing are implemented without external dependencies or manufactured failure.
 
 Not yet implemented or verified at this milestone:
 
@@ -47,6 +48,10 @@ Data collection is planned for **21 October 2026**. The user explicitly deferred
 | `web/plot.mjs` | Pure incremental-history and plotting helpers; preserve measured extrema, not averaged values. |
 | `web/comparison.mjs` | Pure signed inclination and current-sample comparison calculations. |
 | `web/presentation.mjs`, `web/presentation.css` | Presentation instruments, reference controls, focused graph, and cross-window settings. |
+| `web/motion.mjs`, `web/motion-stage.css` | Motion view lifecycle, source/quality labels, interpolation and orbiting camera. |
+| `web/orientation.mjs` | Pure gravity-pose, quaternion and short-window signal-variation helpers. |
+| `web/phone-model.mjs`, `web/phone-model.css` | Locally authored S25 Ultra approximation at published body proportions; quaternion-to-CSS coordinate conversion. |
+| `experiments/observatory-motion.phyphox` | Optional physical acceleration plus OS-fused attitude. Needs physical-device import verification; rate requests must be documented in experiment metadata. |
 | `tests/live.test.mjs` | Existing Node tests; these do not replace future required Python tests. |
 | `data/raw/` | Original phone exports. Treat their bytes as immutable. |
 | `data/recordings.csv` | One metadata row per real recording. Currently headers only. |
@@ -80,6 +85,9 @@ Do not silently change artifact ignore rules. When reproducible results exist, d
 - Keep Start/Stop above the graphs, visible in display mode and on mobile. Animate the time axis without inventing/extrapolating acceleration values. Cache and reduce dense plotted traces by pixel-column extrema so spikes survive; do not apply undocumented smoothing to make data look better.
 - Preserve the presentation's distinction between a correction and a measured error reduction. No reference is supplied by default. Reference error requires a user-entered independent reference and an explicit still-phone confirmation; use only samples after that confirmation. Changes to focus, direction, reference, calibration or stream invalidate the confirmed period. Do not retroactively assign the target to old motion.
 - The presentation cards describe the current sample, not held-out validation or RMSE. Show positive and negative error reductions honestly. Both dials use the same physical degree scale; both reference-error traces use a shared, explicitly labelled scale. Settings synchronize via the versioned localStorage key; backend stream data stays in the SSE contract.
+- Motion view: default gravity tilt has no heading or position information. Do not invent yaw, translation, ground truth, lag, clipping, or an affine-model failure. Sensor quaternions are `[x,y,z,w]`, device-to-world with world +Z up; the model converts phone +Y-up to CSS +Y-down. Quaternion SLERP uses a fixed 55 ms display time constant, with no adaptive slowdown during shaking.
+- Optional attitude: discover the `attitude` input's t/x/y/z/abs outputs (`abs` is quaternion w). Poll with its own time reference; never align it by acceleration indices. SSE metadata adds `attitudeAvailable`, `orientation: {t,q,source}`, `orientationReceivedAt` and `orientationError`. Missing/stale attitude must be labelled and held, never silently replaced by gravity while fused mode is selected.
+- Motion badges are heuristic: vector magnitude deviation from 9.81 and RMS vector variation over 0.25 s, with thresholds 0.35/1.5 m/s². A badge reports uncertainty in gravity-based interpretation, not a verified sensor defect or the deferred scientific rest detector. Original raw data is unchanged.
 
 ## Scientific rules for the future implementation
 

@@ -68,13 +68,28 @@ export function discoverBuffers(config, override) {
   return detected;
 }
 
+export function discoverAttitudeBuffers(config) {
+  const input=(config.inputs||[]).find(i=>[i.source,i.sensor,i.type].includes('attitude'));
+  if(!input)return null;
+  const names=new Set((config.buffers||[]).map(b=>typeof b==='string'?b:b.name));
+  const map={},outputs=input.outputs||input.output||[];
+  if(Array.isArray(outputs))for(const o of outputs){
+    if(typeof o.component==='string')map[o.component]=o.buffer;
+    for(const k of ['t','x','y','z','abs','w'])if(typeof o[k]==='string')map[k]=o[k];
+  }
+  else if(outputs&&typeof outputs==='object')Object.assign(map,outputs);
+  const result={t:map.t,x:map.x,y:map.y,z:map.z,w:map.abs||map.w};
+  return Object.values(result).every(n=>typeof n==='string'&&names.has(n))&&new Set(Object.values(result)).size===5?result:null;
+}
+
 export function createObservatory({pollMs=50, defaultBuffers}={}) {
-  const state={connected:false,source:'none',phoneUrl:'',measuring:false,session:null,error:null,latencyMs:null,lastReceivedAt:null,calibration:structuredClone(identity),buffers:null,points:[],count:0,revision:0};
+  const state={connected:false,source:'none',phoneUrl:'',measuring:false,session:null,error:null,latencyMs:null,lastReceivedAt:null,calibration:structuredClone(identity),buffers:null,points:[],count:0,revision:0,attitudeAvailable:false,orientation:null,orientationReceivedAt:null,orientationError:null};
   let generation=0, timer=null, lastT=null, queue=Promise.resolve(), previewT=0;
+  let attitudeBuffers=null,lastAttitudeT=null;
   let epoch=randomUUID(), inverse=inverse3(state.calibration.S);
   const listeners=new Set();
   const snapshot=()=>({...state,points:state.points});
-  const reset=()=>{epoch=randomUUID();state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;};
+  const reset=()=>{epoch=randomUUID();state.points=[];state.count=0;lastT=null;state.lastReceivedAt=null;lastAttitudeT=null;state.orientation=null;state.orientationReceivedAt=null;state.orientationError=null;};
   const updates=({since=-1,epoch:previousEpoch}={})=>{
     const {points,...metadata}=state;
     const oldest=state.count-points.length;
@@ -105,11 +120,12 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
     try {
       const query=new URLSearchParams();
       for(const k of ['t','x','y','z']) query.set(state.buffers[k],lastT===null?'full':k==='t'?String(lastT):`${lastT}|${state.buffers.t}`);
+      if(attitudeBuffers)for(const k of ['t','x','y','z','w'])query.set(attitudeBuffers[k],lastAttitudeT===null?'full':k==='t'?String(lastAttitudeT):`${lastAttitudeT}|${attitudeBuffers.t}`);
       const data=await phoneRequest(state.phoneUrl,`/get?${query}`);
       if(token!==generation)return;
       const session=data.status?.session;
       if(state.session!==null && session!==undefined && session!==state.session) {
-        reset();state.connected=false;state.measuring=false;state.error='The phyphox experiment changed. Select Acceleration with g and connect again.';stop();touch();return;
+        reset();state.connected=false;state.measuring=false;state.error='The phyphox experiment changed. Reconnect to your selected acceleration experiment.';stop();touch();return;
       }
       state.session=session??state.session;state.measuring=data.status?.measuring===true;state.latencyMs=Date.now()-start;
       const arrays=['t','x','y','z'].map(k=>data.buffer?.[state.buffers[k]]?.buffer);
@@ -120,6 +136,17 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
       for(let i=0;i<arrays[0].length;i++) {
         const t=arrays[0][i],raw=[arrays[1][i],arrays[2][i],arrays[3][i]];
         if(finite(t)&&raw.every(finite)&&(lastT===null||t>lastT))append(t,raw);
+      }
+      if(attitudeBuffers){
+        const att=['t','x','y','z','w'].map(k=>data.buffer?.[attitudeBuffers[k]]?.buffer);
+        if(att.every(Array.isArray)&&att.every(a=>a.length===att[0].length)){
+          if(att[0].length&&lastAttitudeT!==null&&data.buffer[attitudeBuffers.t].updateMode==='full'&&att[0].at(-1)<lastAttitudeT){lastAttitudeT=null;state.orientation=null;state.orientationReceivedAt=null;}
+          for(let i=0;i<att[0].length;i++){
+            const t=att[0][i],q=[att[1][i],att[2][i],att[3][i],att[4][i]],norm=Math.hypot(...q);
+            if(finite(t)&&q.every(finite)&&Number.isFinite(norm)&&norm>1e-6&&(lastAttitudeT===null||t>lastAttitudeT)){state.orientation={t,q:q.map(v=>v/norm),source:'attitude'};lastAttitudeT=t;state.orientationReceivedAt=Date.now();}
+          }
+          state.orientationError=null;
+        }else{state.orientation=null;state.orientationReceivedAt=null;state.orientationError='Attitude buffers are unavailable or not aligned.';}
       }
       trim();state.error=null;
     } catch(error) {if(token!==generation)return;state.error=`${error.message} Keep phyphox open, enable remote access, and check that both devices share Wi-Fi.`;}
@@ -132,15 +159,15 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
     trim();touch();timer=setTimeout(()=>preview(token),60);
   };
   const connect=async({url,buffers})=>{
-    stop();reset();state.source='none';state.connected=false;state.measuring=false;state.error=null;state.session=null;state.latencyMs=null;
+    stop();reset();attitudeBuffers=null;state.attitudeAvailable=false;state.source='none';state.connected=false;state.measuring=false;state.error=null;state.session=null;state.latencyMs=null;
     state.phoneUrl=normalizePhoneUrl(url);
     const token=generation;
     const config=await phoneRequest(state.phoneUrl,'/config');
     if(token!==generation)return snapshot();
-    state.buffers=discoverBuffers(config,buffers||defaultBuffers);state.connected=true;state.source='phone';touch();
+    state.buffers=discoverBuffers(config,buffers||defaultBuffers);attitudeBuffers=discoverAttitudeBuffers(config);state.attitudeAvailable=Boolean(attitudeBuffers);state.connected=true;state.source='phone';touch();
     await poll(token);return snapshot();
   };
-  const disconnect=()=>{stop();state.connected=false;state.measuring=false;state.source='none';state.error=null;reset();touch();return snapshot();};
+  const disconnect=()=>{stop();attitudeBuffers=null;state.attitudeAvailable=false;state.connected=false;state.measuring=false;state.source='none';state.error=null;reset();touch();return snapshot();};
   const setPreview=enabled=>{
     disconnect();if(enabled){state.source='synthetic';state.measuring=true;state.session='synthetic-preview';state.latencyMs=null;previewT=0;preview(generation);}return snapshot();
   };
@@ -167,6 +194,10 @@ export function createServer(options={}) {
       if(!/^localhost(?::\d+)?$|^127\.0\.0\.1(?::\d+)?$/.test(host))return json(res,403,{error:'Use the localhost dashboard URL.'});
       if(req.headers.origin && req.headers.origin!==`http://${host}`)return json(res,403,{error:'Cross-origin requests are not accepted.'});
       const url=new URL(req.url,`http://${host}`);
+      if(req.method==='GET'&&url.pathname==='/experiments/observatory-motion.phyphox'){
+        const content=await readFile(resolve(root,'experiments','observatory-motion.phyphox'));
+        res.writeHead(200,{'content-type':'application/octet-stream','content-disposition':'attachment; filename="observatory-motion.phyphox"','x-content-type-options':'nosniff'});res.end(content);return;
+      }
       if(req.method==='GET'&&url.pathname==='/api/state')return json(res,200,observatory.snapshot());
       if(req.method==='GET'&&url.pathname==='/api/events') {
         res.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform','connection':'keep-alive','x-accel-buffering':'no'});
@@ -201,7 +232,7 @@ export function createServer(options={}) {
         }
         return json(res,200,url.searchParams.has('compact')?{ok:true}:result);
       }
-      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/comparison.mjs':['comparison.mjs','text/javascript'],'/presentation.mjs':['presentation.mjs','text/javascript'],'/presentation.css':['presentation.css','text/css'],'/styles.css':['styles.css','text/css']};
+      const assets={'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/plot.mjs':['plot.mjs','text/javascript'],'/comparison.mjs':['comparison.mjs','text/javascript'],'/presentation.mjs':['presentation.mjs','text/javascript'],'/presentation.css':['presentation.css','text/css'],'/styles.css':['styles.css','text/css'],'/motion.mjs':['motion.mjs','text/javascript'],'/orientation.mjs':['orientation.mjs','text/javascript'],'/phone-model.mjs':['phone-model.mjs','text/javascript'],'/phone-model.css':['phone-model.css','text/css'],'/motion-stage.css':['motion-stage.css','text/css']};
       if(req.method!=='GET'||!assets[url.pathname])return json(res,404,{error:'Not found.'});
       const [file,type]=assets[url.pathname];const content=await readFile(resolve(root,'web',file));
       res.writeHead(200,{'content-type':`${type}; charset=utf-8`,'cache-control':'no-cache','x-content-type-options':'nosniff','content-security-policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'"});res.end(content);

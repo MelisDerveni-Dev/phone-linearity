@@ -8,6 +8,7 @@
   <title>The Affine Observatory · Phone accelerometer laboratory</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/presentation.css">
+  <link rel="stylesheet" href="/motion-stage.css">
   <script src="/app.js" type="module"></script>
 </head>
 <body>
@@ -127,6 +128,63 @@
 
       <section class="bench-notes" aria-label="Measurement notes and stream statistics"><div class="experiment-note"><span class="note-marker" aria-hidden="true">i</span><p><strong>Calibration is an experiment, not a promise.</strong><br>An affine model can correct scale, cross-axis mixing and offset. It cannot recover clipped or missing measurements.</p></div><dl class="stream-statistics"><div><dt>SAMPLES</dt><dd id="sample-count">0</dd></div><div><dt>SAMPLE RATE</dt><dd><span id="sample-rate">—</span><small> Hz</small></dd></div><div><dt>REQUEST TIME</dt><dd><span id="latency-value">—</span><small> ms</small></dd></div></dl></section>
       </details>
+<section id="motion-section" class="motion-section" data-state="idle" aria-labelledby="motion-heading">
+  <header class="motion-section-heading">
+    <div>
+      <p class="motion-kicker">03 / A DIFFERENT PERSPECTIVE</p>
+      <h2 id="motion-heading">The phone, <em>in motion.</em></h2>
+      <p class="motion-intro">A little movement. A new point of view.<br>The reference plane stays fixed while your phone tilts.</p>
+    </div>
+    <span id="motion-source" class="motion-source">No active source</span>
+  </header>
+
+  <div class="motion-bench">
+    <div class="motion-viewport">
+      <div id="motion-stage" class="motion-stage" role="img" aria-label="Live phone tilt against a fixed reference plane. Tracking status and measurements appear alongside.">
+        <p class="motion-stage-ruler" aria-hidden="true">THE ORIENTATION BENCH<br>FIXED REFERENCE / XY</p>
+        <span class="motion-stage-coordinate" aria-hidden="true">X · Y · Z</span>
+        <div id="motion-camera" class="motion-camera" aria-hidden="true">
+          <div id="motion-world" class="motion-world">
+            <div class="motion-reference-plane">
+              <span class="motion-plane-label">REFERENCE PLANE</span>
+              <span class="motion-plane-origin"></span>
+              <span class="motion-plane-axis-x"><span>+X</span></span>
+              <span class="motion-plane-axis-y"><span>+Y</span></span>
+            </div>
+            <span class="motion-plane-axis-z"><span>+Z</span></span>
+            <div class="motion-phone-shadow"></div>
+            <div id="motion-model-host" class="motion-model-host" hidden></div>
+          </div>
+        </div>
+        <div id="motion-placeholder" class="motion-placeholder">
+          <svg viewBox="0 0 48 64" aria-hidden="true"><rect x="10" y="2" width="28" height="58" rx="5"/><rect x="13" y="7" width="22" height="46" rx="2"/><circle cx="24" cy="56" r="1"/><path d="M1 24h7m32 0h7M4 20l-3 4 3 4m40-8 3 4-3 4M21 14h6m-3-3v6"/></svg>
+          <strong>Ready when you move.</strong>
+          <p>Start a phone measurement to see its tilt here. No motion is invented while we wait.</p>
+        </div>
+      </div>
+      <div class="motion-stage-footer"><span>DRAG TO ORBIT · FIXED REFERENCE PLANE</span><span>S25 ULTRA · 162.8 × 77.6 × 8.2 mm</span></div>
+    </div>
+
+    <aside class="motion-instruments" aria-label="Motion tracking controls and measurements">
+      <div class="motion-instrument-heading"><span>THE LIVE READOUT</span><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M27 3h10l2 9 6 3 9-3 5 9-7 6v10l7 6-5 9-9-3-6 3-2 9H27l-2-9-6-3-9 3-5-9 7-6V27l-7-6 5-9 9 3 6-3Z"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="5"/></svg></div>
+      <div class="motion-status-wrap"><span class="motion-status-dot" aria-hidden="true"></span><span id="motion-status" role="status">Waiting for measurement</span></div>
+      <label class="motion-control-label" for="motion-mode">ORIENTATION SOURCE<select id="motion-mode"><option value="gravity" selected>Gravity tilt</option><option value="attitude" disabled>Fused attitude · unavailable</option></select></label>
+      <dl class="motion-statistics">
+        <div><dt>VECTOR MAGNITUDE</dt><dd><span id="motion-norm">—</span><small>m/s²</small></dd></div>
+        <div><dt>SIGNAL VARIATION</dt><dd><span id="motion-variation">—</span><small>m/s²</small></dd></div>
+        <div><dt>LAST BATCH AGE</dt><dd><span id="motion-latency">—</span><small>ms</small></dd></div>
+      </dl>
+      <button id="motion-view-reset" class="motion-view-reset" type="button" title="Restore the viewing angle without changing your phone calibration"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6a7 7 0 1 1-1 6M4 2v5h5"/></svg><span>Reset view</span></button>
+      <p id="motion-yaw-note" class="motion-yaw-note">Gravity gives tilt. Turning around vertical needs an additional orientation sensor.</p>
+    </aside>
+  </div>
+
+  <footer class="motion-caption">
+    <p><strong>Gravity tilt becomes unreliable during acceleration.</strong> This is a tilt-estimation limit, not proof the affine sensor model failed. The S25 Ultra is an authored visual approximation at its published body proportions.</p>
+    <a class="motion-experiment-link" href="/experiments/observatory-motion.phyphox" download><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m-3-3 3 3 3-3M3 11v3h10v-3"/></svg>Optional: fused-attitude experiment</a>
+  </footer>
+</section>
+
       <footer class="main-footer"><span>IS YOUR PHONE LINEAR? <span class="footer-separator">/</span> AN EXPERIMENT IN MEASUREMENT</span><span>BUILT FOR CURIOUS MINDS <span aria-hidden="true">✳</span></span></footer>
     </main>
   </div>

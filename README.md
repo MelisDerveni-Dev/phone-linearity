@@ -47,6 +47,24 @@ The presentation section pairs two inclination dials with a focused comparison g
 
 Reference comparisons begin with fresh samples after confirmation. Uncheck the confirmation before moving the phone or changing the ramp. Changing the reference, focus, slope direction, calibration or stream resets the confirmation. Settings synchronize between windows in the same browser. With identity calibration, the dials match and the applied correction/error reduction is zero. Synthetic preview remains labelled; it never becomes phone evidence.
 
+## The 3D phone
+
+Below the original X/Y/Z trace inspector is **The phone, in motion**. Starting a fresh measurement opens the trace inspector and reveals an authored Samsung Galaxy S25 Ultra model against a transparent, fixed XYZ plane. The body uses Samsung's published **162.8 × 77.6 × 8.2 mm** proportions, with illustrative titanium framing, screen, camera rings and ports. It is a locally authored visual approximation, not manufacturer CAD. There are no external model downloads or rendering dependencies. [Samsung specifications](https://www.samsung.com/ca/smartphones/galaxy-s25-ultra/specs/).
+
+With **Acceleration with g**, the model follows calibrated **gravity-based tilt**. Acceleration alone cannot identify rotation about gravity (heading), nor recover phone position. Drag the stage to orbit the viewing camera; **Reset view** restores the camera without changing sensor data or calibration. Pausing retains the last pose. Disconnection resets the view; stale data holds the last pose with a warning.
+
+During strong motion, the view flags **tilt uncertainty** using the current vector magnitude and the vector RMS variation over the last 0.25 s. Indicator thresholds are 0.35 m/s² for noticeable deviation/variation and 1.5 m/s² for strong deviation/variation relative to approximately g = 9.81 m/s². These are display heuristics, not a calibrated confidence score or an automatic rest detector. Even a near-g, quiet vector does not prove the phone is still. The pose uses quaternion interpolation with a 55 ms visual easing time constant, disabled for reduced-motion preferences; plots and numerical samples are unchanged. Render/transport latency can also limit tracking. **No extra lag or simulated failure is introduced during shaking.**
+
+Shaking can invalidate the assumption that acceleration gives gravity direction. This does **not**, by itself, establish a failure of the affine sensor model. Keep that distinction in the report and demo.
+
+### Optional: full rotation with fused attitude
+
+For heading as well as tilt, open [observatory-motion.phyphox](experiments/observatory-motion.phyphox) on your phone and import it into phyphox. You can download it from the 3D section while the dashboard runs, then transfer/open the file on the phone. Select **Affine Observatory - motion**, enable its remote access, and reconnect using the URL it shows. Export any existing recording before switching experiments. Importing the file through the phyphox experiment editor, the phone's file picker or a shared file is sufficient; no browser device-orientation permission is used.
+
+This configuration requests physical acceleration with gravity at 100 Hz and optional OS-fused attitude at 50 Hz. When a compatible attitude stream is detected, the view selects **Fused attitude** automatically; you can switch back to **Gravity tilt** to compare their assumptions. Missing attitude leaves gravity mode available. Attitude uses its own timestamp buffer; it is never paired by acceleration-array index. The scalar quaternion component comes from phyphox's `abs` output, following the [official sensor documentation](https://phyphox.org/docs/file-format/input/).
+
+Fused attitude is the device's estimate, not independent ground truth or an affine correction. It still does not measure position. The optional experiment's XML and mock-phone integration are checked; importing and validating this configuration on your physical S25 Ultra remains a demo preparation step. Record the chosen experiment/rates in your metadata and keep settings consistent across fit and test sessions.
+
 ```powershell
 npm start -- --phone http://192.168.1.42:8080 --calibration calibration/params.json
 ```
@@ -98,6 +116,7 @@ data/README.md          Collection protocol and pending header/device notes
 data/recordings.csv     Metadata table (headers only until collection)
 src/calib/              Reserved Python calibration package
 calibration/            Identity JSON; future fitted parameters
+experiments/            Optional acceleration + fused-attitude phyphox configuration
 results/figures/        Future evidence plots
 results/metrics/        Future held-out metrics
 web/                    Local dashboard HTML, CSS and JavaScript
@@ -115,7 +134,7 @@ npm test
 npm run check
 ```
 
-Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, the distinction between correction and reference error, and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
+Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, correction versus reference error, orientation quaternion math, physical phone proportions, independent attitude timestamps, and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
 
 ## Next milestone — after collection
 
