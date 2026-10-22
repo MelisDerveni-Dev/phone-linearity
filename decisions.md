@@ -1,5 +1,15 @@
 # Decision log
 
+## 2026-10-22 ? Publish angle datasets
+Decision: at the user's explicit request, version all three generated angle datasets (training.csv, testing.csv and limit.csv) alongside the already-published raw export. Add narrowly scoped ignore exceptions and preserve exact bytes in Git so existing audit hashes remain valid. Other generated data stays ignored.
+Alternatives: require teammates to regenerate the CSVs from the raw export.
+Evidence: the user reports the new data is missing from Git. The raw export was already published on data/angle-preprocessing-2026-10-22, but generated CSVs were ignored. All source/output hashes match the existing audit; publishing adds no new preprocessing or scientific results.
+
+## 2026-10-22 — Angle acquisition and reversible boundary preprocessing
+Decision: partition the new export with original START/PAUSE intervals into four consecutive ramp pairs and a ninth shaking run. Preserve training/testing acquisition labels while reserving ramps for validation of the same future static-face affine fit. Retain all rows/numeric strings; flag only the first/last second of quiet intervals as excluded by a fixed timing precaution. Do not smooth, remove shaking peaks, fit parameters or claim a general rest detector. Version compact audit/protocol and trace review; keep new large processed CSVs ignored and reproducible without changing ignore rules.
+Alternatives: guess 30-second cuts, tune masks from validation errors, merge angle samples into fitting, fit a second model, or call strong shaking an observed affine failure.
+Evidence: 131,834 finite samples in nine 30.001–32.542 s runs. Training/testing/limit counts are 58,204/58,885/14,745; quiet included counts are 54,440/55,122. The user confirms a 16 cm hypotenuse with 10 cm height in runs 1–4 and 5 cm in runs 5–8, giving 38.6822°/18.2100°. First pair at each height is screen-up; second pair is on its side. Raw hashes, exact coverage and per-run variability are audited; original bytes are unchanged. Shaking reaches vector magnitude 119.821 m/s² but lacks an independent force reference. Exact signed vectors and geometry uncertainty remain unspecified. Eight Python tests and 31 Node tests/check pass; the trace/mask SVG was rendered and reviewed.
+
 Each entry records the decision, alternatives, and evidence. Proposed decisions remain revisable after measurements; no empirical benefit is claimed today.
 
 ## 2026-10-20 — Scope

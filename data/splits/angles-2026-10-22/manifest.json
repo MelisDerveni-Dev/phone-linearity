@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "source_sha256": {
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/Raw Data.csv": "ed94f49c848a789b48b99596b1a6a079ac7f18df7ada78ed058ef6f173e330ac",
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/meta/time.csv": "e724397501244218bbc10dde2d44c5edb5a394b42758c645994088963152e766",
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/meta/device.csv": "6bde6af06c394b374bb41b7f8967d3e03aa9a8898af5aa98c0e2a3d4739d58bb",
+    "data/splits/angles-2026-10-22/protocol.json": "a033434e1765bf4648ca05fad145fd29ffb927bdd8a70e63c099735bbd44ffb9"
+  },
+  "samples": 131834,
+  "outputs": {
+    "training": {
+      "path": "data/processed/angles-2026-10-22/training.csv",
+      "sha256": "01c2242064ab8424ad66cfa0bcfa2ec4cab6d9a2853ca2cea2dcd7cdbd5dc039",
+      "samples": 58204,
+      "included_samples": 54440
+    },
+    "testing": {
+      "path": "data/processed/angles-2026-10-22/testing.csv",
+      "sha256": "857f99b2218a619e1f83f8b19b35f84e0930104178f1e6a8bdbf6519e7a46be3",
+      "samples": 58885,
+      "included_samples": 55122
+    },
+    "limit": {
+      "path": "data/processed/angles-2026-10-22/limit.csv",
+      "sha256": "9aa86e36689d02e84ec68744f3b9a6456c86f9c770c651b65bf08c34c27f4a7b",
+      "samples": 14745,
+      "included_samples": 14745
+    }
+  },
+  "segments": [
+    {
+      "segment_id": 1,
+      "start_s": 0.0,
+      "end_s": 31.06951249,
+      "duration_s": 31.06951249,
+      "wall_start": "2026-10-22 10:48:23.507 UTC+02:00",
+      "wall_end": "2026-10-22 10:48:54.576 UTC+02:00",
+      "pause_before_s": null,
+      "pair_id": 1,
+      "kind": "ramp",
+      "split": "training",
+      "support_orientation": "screen_up",
+      "height_m": 0.1,
+      "angle_deg": 38.68218745348944,
+      "samples": 14705,
+      "included_samples": 13765,
+      "first_source_row": 1,
+      "last_source_row": 14705,
+      "mean_xyz_m_s2": [
+        -0.05311701219128151,
+        5.696293932109626,
+        8.09912673488805
+      ],
+      "std_xyz_m_s2": [
+        0.007835738222573743,
+        0.008124266758665726,
+        0.010347676757052502
+      ],
+      "min_xyz_m_s2": [
+        -0.09092725813,
+        5.661418438,
+        8.049455643
+      ],
+      "max_xyz_m_s2": [
+        -0.0239282269,
+        5.733202934,
+        8.140382767
+      ],
+      "max_vector_magnitude_m_s2": 9.943114224767555
+    },
+    {
+      "segment_id": 2,
+      "start_s": 31.06951249,
+      "end_s": 61.87114404,
+      "duration_s": 30.801631549999996,
+      "wall_start": "2026-10-22 10:48:58.984 UTC+02:00",
+      "wall_end": "2026-10-22 10:49:29.786 UTC+02:00",
+      "pause_before_s": 4.4079999923706055,
+      "pair_id": 1,
+      "kind": "ramp",
+      "split": "testing",
+      "support_orientation": "screen_up",
+      "height_m": 0.1,
+      "angle_deg": 38.68218745348944,
+      "samples": 14577,
+      "included_samples": 13637,
+      "first_source_row": 14706,
+      "last_source_row": 29282,
+      "mean_xyz_m_s2": [
+        -0.05320920255274107,
+        5.696222627148273,
+        8.098836706500917
+      ],
+      "std_xyz_m_s2": [
+        0.007799132445173092,
+        0.00828183624622821,
+        0.010734873352735475
+      ],
+      "min_xyz_m_s2": [
+        -0.08135596663,
+        5.661418438,
+        7.972885132
+      ],
+      "max_xyz_m_s2": [
+        -0.0239282269,
+        5.728417397,
+        8.193024635
+      ],
+      "max_vector_magnitude_m_s2": 9.986156725796114
+    },
+    {
+      "segment_id": 3,
+      "start_s": 61.87114404,
+      "end_s": 91.87262778,
+      "duration_s": 30.001483740000005,
+      "wall_start": "2026-10-22 10:50:16.643 UTC+02:00",
+      "wall_end": "2026-10-22 10:50:46.645 UTC+02:00",
+      "pause_before_s": 46.85699987411499,
+      "pair_id": 2,
+      "kind": "ramp",
+      "split": "training",
+      "support_orientation": "on_side_screen_perpendicular",
+      "height_m": 0.1,
+      "angle_deg": 38.68218745348944,
+      "samples": 14200,
+      "included_samples": 13259,
+      "first_source_row": 29283,
+      "last_source_row": 43482,
+      "mean_xyz_m_s2": [
+        7.893336634959047,
+        5.654760186158534,
+        0.7507908340314127
+      ],
+      "std_xyz_m_s2": [
+        0.007868082063223368,
+        0.008138118791956335,
+        0.01030261027402965
+      ],
+      "min_xyz_m_s2": [
+        7.86281538,
+        5.623133183,
+        0.708275497
+      ],
+      "max_xyz_m_s2": [
+        7.925028801,
+        5.685346603,
+        0.7896314859
+      ],
+      "max_vector_magnitude_m_s2": 9.770117337511522
+    },
+    {
+      "segment_id": 4,
+      "start_s": 91.87262778,
+      "end_s": 122.5212679,
+      "duration_s": 30.648640119999996,
+      "wall_start": "2026-10-22 10:50:53.457 UTC+02:00",
+      "wall_end": "2026-10-22 10:51:24.105 UTC+02:00",
+      "pause_before_s": 6.812000036239624,
+      "pair_id": 2,
+      "kind": "ramp",
+      "split": "testing",
+      "support_orientation": "on_side_screen_perpendicular",
+      "height_m": 0.1,
+      "angle_deg": 38.68218745348944,
+      "samples": 14507,
+      "included_samples": 13565,
+      "first_source_row": 43483,
+      "last_source_row": 57989,
+      "mean_xyz_m_s2": [
+        7.893787649669296,
+        5.654467625103723,
+        0.7510559645999336
+      ],
+      "std_xyz_m_s2": [
+        0.007809173027942735,
+        0.008216534465369331,
+        0.010321971347066425
+      ],
+      "min_xyz_m_s2": [
+        7.86281538,
+        5.623133183,
+        0.708275497
+      ],
+      "max_xyz_m_s2": [
+        7.925028801,
+        5.685346603,
+        0.7896314859
+      ],
+      "max_vector_magnitude_m_s2": 9.769002638582782
+    },
+    {
+      "segment_id": 5,
+      "start_s": 122.5212679,
+      "end_s": 153.9996913,
+      "duration_s": 31.478423399999997,
+      "wall_start": "2026-10-22 10:52:04.557 UTC+02:00",
+      "wall_end": "2026-10-22 10:52:36.036 UTC+02:00",
+      "pause_before_s": 40.45199990272522,
+      "pair_id": 3,
+      "kind": "ramp",
+      "split": "training",
+      "support_orientation": "screen_up",
+      "height_m": 0.05,
+      "angle_deg": 18.20995686428301,
+      "samples": 14898,
+      "included_samples": 13958,
+      "first_source_row": 57990,
+      "last_source_row": 72887,
+      "mean_xyz_m_s2": [
+        -0.0687150502075455,
+        2.485868120539619,
+        9.569770659206261
+      ],
+      "std_xyz_m_s2": [
+        0.007801161472625616,
+        0.008207988441856523,
+        0.010190441360909274
+      ],
+      "min_xyz_m_s2": [
+        -0.09571290761,
+        2.450250387,
+        9.528220177
+      ],
+      "max_xyz_m_s2": [
+        -0.0382851623,
+        2.517249346,
+        9.609575272
+      ],
+      "max_vector_magnitude_m_s2": 9.929231003078796
+    },
+    {
+      "segment_id": 6,
+      "start_s": 153.9996913,
+      "end_s": 184.4219631,
+      "duration_s": 30.422271800000004,
+      "wall_start": "2026-10-22 10:52:40.042 UTC+02:00",
+      "wall_end": "2026-10-22 10:53:10.464 UTC+02:00",
+      "pause_before_s": 4.00600004196167,
+      "pair_id": 3,
+      "kind": "ramp",
+      "split": "testing",
+      "support_orientation": "screen_up",
+      "height_m": 0.05,
+      "angle_deg": 18.20995686428301,
+      "samples": 14399,
+      "included_samples": 13458,
+      "first_source_row": 72888,
+      "last_source_row": 87286,
+      "mean_xyz_m_s2": [
+        -0.06870519581466489,
+        2.4853967050487444,
+        9.569092596153887
+      ],
+      "std_xyz_m_s2": [
+        0.0077532130548853785,
+        0.008154188533411683,
+        0.010275933544437907
+      ],
+      "min_xyz_m_s2": [
+        -0.09571290761,
+        2.455035925,
+        9.528220177
+      ],
+      "max_xyz_m_s2": [
+        -0.0382851623,
+        2.517249346,
+        9.614361763
+      ],
+      "max_vector_magnitude_m_s2": 9.929102641674133
+    },
+    {
+      "segment_id": 7,
+      "start_s": 184.4219631,
+      "end_s": 214.8448359,
+      "duration_s": 30.422872799999993,
+      "wall_start": "2026-10-22 10:53:58.541 UTC+02:00",
+      "wall_end": "2026-10-22 10:54:28.963 UTC+02:00",
+      "pause_before_s": 48.07699990272522,
+      "pair_id": 4,
+      "kind": "ramp",
+      "split": "training",
+      "support_orientation": "on_side_screen_perpendicular",
+      "height_m": 0.05,
+      "angle_deg": 18.20995686428301,
+      "samples": 14401,
+      "included_samples": 13458,
+      "first_source_row": 87287,
+      "last_source_row": 101687,
+      "mean_xyz_m_s2": [
+        9.34517245598722,
+        2.6199537449800863,
+        0.2390753042481498
+      ],
+      "std_xyz_m_s2": [
+        0.007828683110503722,
+        0.008233167602461192,
+        0.010323418131443213
+      ],
+      "min_xyz_m_s2": [
+        9.317651749,
+        2.574677229,
+        0.1914258152
+      ],
+      "max_xyz_m_s2": [
+        9.375079155,
+        2.656033039,
+        0.2967100143
+      ],
+      "max_vector_magnitude_m_s2": 9.73944783572888
+    },
+    {
+      "segment_id": 8,
+      "start_s": 214.8448359,
+      "end_s": 247.3868024,
+      "duration_s": 32.5419665,
+      "wall_start": "2026-10-22 10:54:32.569 UTC+02:00",
+      "wall_end": "2026-10-22 10:55:05.111 UTC+02:00",
+      "pause_before_s": 3.6059999465942383,
+      "pair_id": 4,
+      "kind": "ramp",
+      "split": "testing",
+      "support_orientation": "on_side_screen_perpendicular",
+      "height_m": 0.05,
+      "angle_deg": 18.20995686428301,
+      "samples": 15402,
+      "included_samples": 14462,
+      "first_source_row": 101688,
+      "last_source_row": 117089,
+      "mean_xyz_m_s2": [
+        9.34576353594655,
+        2.620070968514659,
+        0.23883453911806804
+      ],
+      "std_xyz_m_s2": [
+        0.007766818074702646,
+        0.008208019910139386,
+        0.010368391170539174
+      ],
+      "min_xyz_m_s2": [
+        9.312865257,
+        2.584248543,
+        0.1962114573
+      ],
+      "max_xyz_m_s2": [
+        9.375079155,
+        2.651247501,
+        0.2823530734
+      ],
+      "max_vector_magnitude_m_s2": 9.740500050445931
+    },
+    {
+      "segment_id": 9,
+      "start_s": 247.3868024,
+      "end_s": 278.539844,
+      "duration_s": 31.153041600000023,
+      "wall_start": "2026-10-22 10:55:17.130 UTC+02:00",
+      "wall_end": "2026-10-22 10:55:48.283 UTC+02:00",
+      "pause_before_s": 12.019000053405762,
+      "pair_id": null,
+      "kind": "shaking",
+      "split": "limit",
+      "height_m": null,
+      "angle_deg": null,
+      "samples": 14745,
+      "included_samples": 14745,
+      "first_source_row": 117090,
+      "last_source_row": 131834,
+      "mean_xyz_m_s2": [
+        8.446479915131944,
+        -9.464878203716403,
+        3.0405627343823705
+      ],
+      "std_xyz_m_s2": [
+        23.85498132333909,
+        14.324898460763047,
+        21.557802855870086
+      ],
+      "min_xyz_m_s2": [
+        -71.27739716,
+        -52.99145126,
+        -80.93482971
+      ],
+      "max_xyz_m_s2": [
+        80.53762817,
+        36.68675613,
+        94.3346405
+      ],
+      "max_vector_magnitude_m_s2": 119.82106794295841
+    }
+  ],
+  "protocol": {
+    "schema_version": 1,
+    "boundary_trim_s": 1.0,
+    "contact_spacing_m": 0.16,
+    "geometry_note": "User confirms a right triangle: phone length is the 16 cm hypotenuse from table to wall contact. Vertical wall height is 10 cm for runs 1\u20134, 5 cm for runs 5\u20138. Angles are relative to horizontal. Shaking has no reference geometry.",
+    "height_uncertainty_m": null,
+    "length_uncertainty_m": null,
+    "orientation_note": "User confirms first pair at each height is screen-up; second pair is on the side with screen perpendicular to table. Exact signed reference vectors are not assigned from observed component signs.",
+    "runs": [
+      {
+        "pair_id": 1,
+        "kind": "ramp",
+        "split": "training",
+        "support_orientation": "screen_up",
+        "height_m": 0.1
+      },
+      {
+        "pair_id": 1,
+        "kind": "ramp",
+        "split": "testing",
+        "support_orientation": "screen_up",
+        "height_m": 0.1
+      },
+      {
+        "pair_id": 2,
+        "kind": "ramp",
+        "split": "training",
+        "support_orientation": "on_side_screen_perpendicular",
+        "height_m": 0.1
+      },
+      {
+        "pair_id": 2,
+        "kind": "ramp",
+        "split": "testing",
+        "support_orientation": "on_side_screen_perpendicular",
+        "height_m": 0.1
+      },
+      {
+        "pair_id": 3,
+        "kind": "ramp",
+        "split": "training",
+        "support_orientation": "screen_up",
+        "height_m": 0.05
+      },
+      {
+        "pair_id": 3,
+        "kind": "ramp",
+        "split": "testing",
+        "support_orientation": "screen_up",
+        "height_m": 0.05
+      },
+      {
+        "pair_id": 4,
+        "kind": "ramp",
+        "split": "training",
+        "support_orientation": "on_side_screen_perpendicular",
+        "height_m": 0.05
+      },
+      {
+        "pair_id": 4,
+        "kind": "ramp",
+        "split": "testing",
+        "support_orientation": "on_side_screen_perpendicular",
+        "height_m": 0.05
+      },
+      {
+        "pair_id": null,
+        "kind": "shaking",
+        "split": "limit",
+        "height_m": null
+      }
+    ]
+  },
+  "boundary_convention": "Original START/PAUSE [start,end), no guessed 30-second cuts.",
+  "preprocessing": "All original strings/rows retained. Quiet-run include=1 only in [start+1s,end-1s). Shaking entirely retained. No smoothing/resampling/outlier removal or data-dependent selection.",
+  "geometry_status": "user-supplied contact geometry; dimensional uncertainty unspecified",
+  "limitations": [
+    "Training/testing are acquisition labels; ramps remain separate from six-face calibration fitting.",
+    "Pairs come from one session; independent repositioning not confirmed.",
+    "Timing trim is not rest detection; inspect the audit plot and per-run variability.",
+    "Screen-up versus side support is user-confirmed; exact signed reference vectors and ruler/contact uncertainty remain unspecified.",
+    "Shaking changes true input and invalidates gravity-only tilt interpretation; it does not establish affine accelerometer failure.",
+    "No fitting, corrected errors, improvement or clipping conclusion."
+  ]
+}

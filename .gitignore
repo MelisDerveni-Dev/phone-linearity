@@ -16,6 +16,11 @@ data/processed/*
 data/processed/static-2026-10-21/*
 !data/processed/static-2026-10-21/training.csv
 !data/processed/static-2026-10-21/testing.csv
+!data/processed/angles-2026-10-22/
+data/processed/angles-2026-10-22/*
+!data/processed/angles-2026-10-22/training.csv
+!data/processed/angles-2026-10-22/testing.csv
+!data/processed/angles-2026-10-22/limit.csv
 results/figures/*
 !results/figures/.gitkeep
 results/metrics/*
