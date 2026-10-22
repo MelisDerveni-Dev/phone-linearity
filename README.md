@@ -154,7 +154,7 @@ python scripts/preprocess_angles.py "data/raw/Acceleration with g 2026-10-22 10-
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-See [the angle audit](data/splits/angles-2026-10-22/README.md) and [trace review](data/splits/angles-2026-10-22/trace-review.svg). Four consecutive training/testing pairs remain separate from six-face calibration fitting; the ninth run is shaking. The same future affine model will be tested on these angles, without fitting a second model. Angles from confirmed 16 cm contact spacing are 38.6822° (10 cm height) and 18.2100° (5 cm). All original samples survive with source-row provenance. Quiet-run `include=1` excludes one second at each acquisition boundary; this is not a scientific rest detector. New generated CSVs remain ignored and reproducible; ignore rules are unchanged. Shaking alone does not establish affine sensor failure.
+See [the angle audit](data/splits/angles-2026-10-22/README.md) and [trace review](data/splits/angles-2026-10-22/trace-review.svg). Four consecutive training/testing pairs remain separate from six-face calibration fitting; the ninth run is shaking. The same future affine model will be tested on these angles, without fitting a second model. Angles from confirmed 16 cm contact spacing are 38.6822° (10 cm height) and 18.2100° (5 cm). All original samples survive with source-row provenance. Quiet-run `include=1` excludes one second at each acquisition boundary; this is not a scientific rest detector. The generated training/testing/limit CSVs are versioned at the user's request, with narrow ignore exceptions and exact-byte preservation for audit hashes. Shaking alone does not establish affine sensor failure.
 
 With Python 3.10 or newer, from the project root:
 

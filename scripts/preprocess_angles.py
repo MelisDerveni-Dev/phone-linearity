@@ -126,7 +126,7 @@ def preprocess(source, protocol_path, output, audit):
     (audit / "manifest.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     write_plot(audit / "trace-review.svg", samples, groups, segments, trim)
     lines = ["# Angle and shaking acquisition: 22 October 2026", "",
-             "All original rows are retained in ignored, reproducible split CSVs. Use `include=1` for the timing-trimmed quiet-run summaries; no automated rest detector is claimed.", "",
+             "All original rows are retained in versioned, reproducible split CSVs. Use `include=1` for the timing-trimmed quiet-run summaries; no automated rest detector is claimed.", "",
              "| Run | Pair | Support | Split | Seconds | All / included samples | Height (m) | Angle (degrees) |",
              "| --- | --- | --- | --- | ---: | ---: | ---: | ---: |"]
     for s in segments:

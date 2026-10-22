@@ -1,6 +1,6 @@
 # Angle and shaking acquisition: 22 October 2026
 
-All original rows are retained in ignored, reproducible split CSVs. Use `include=1` for the timing-trimmed quiet-run summaries; no automated rest detector is claimed.
+All original rows are retained in versioned, reproducible split CSVs. Use `include=1` for the timing-trimmed quiet-run summaries; no automated rest detector is claimed.
 
 | Run | Pair | Support | Split | Seconds | All / included samples | Height (m) | Angle (degrees) |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: |

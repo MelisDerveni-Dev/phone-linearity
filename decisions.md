@@ -1,5 +1,10 @@
 # Decision log
 
+## 2026-10-22 ? Publish angle datasets
+Decision: at the user's explicit request, version all three generated angle datasets (training.csv, testing.csv and limit.csv) alongside the already-published raw export. Add narrowly scoped ignore exceptions and preserve exact bytes in Git so existing audit hashes remain valid. Other generated data stays ignored.
+Alternatives: require teammates to regenerate the CSVs from the raw export.
+Evidence: the user reports the new data is missing from Git. The raw export was already published on data/angle-preprocessing-2026-10-22, but generated CSVs were ignored. All source/output hashes match the existing audit; publishing adds no new preprocessing or scientific results.
+
 ## 2026-10-22 — Angle acquisition and reversible boundary preprocessing
 Decision: partition the new export with original START/PAUSE intervals into four consecutive ramp pairs and a ninth shaking run. Preserve training/testing acquisition labels while reserving ramps for validation of the same future static-face affine fit. Retain all rows/numeric strings; flag only the first/last second of quiet intervals as excluded by a fixed timing precaution. Do not smooth, remove shaking peaks, fit parameters or claim a general rest detector. Version compact audit/protocol and trace review; keep new large processed CSVs ignored and reproducible without changing ignore rules.
 Alternatives: guess 30-second cuts, tune masks from validation errors, merge angle samples into fitting, fit a second model, or call strong shaking an observed affine failure.
