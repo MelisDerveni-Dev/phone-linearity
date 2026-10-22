@@ -1,6 +1,23 @@
 # Measurement manifest
 
-**Static measurements collected on 21 October 2026.** One original export contains twelve start/pause recordings: two consecutive repeats of each of the six signed axis poses. Angle and referenced limit measurements remain pending. The live viewer does not save or alter raw recordings.
+**Measurements collected on 21–22 October 2026.** The first export contains twelve static start/pause recordings. The second contains eight quiet angle runs and one shaking run. A scientifically referenced affine-limit result remains pending. The live viewer does not save or alter raw recordings.
+
+## Angle/shaking export: 22 October
+
+Source: `raw/Acceleration with g 2026-10-22 10-55-51/Raw Data.csv` and original `meta/` files. There are **131,834 samples** in nine acquisition intervals, each **30.001–32.542 s**. Device/sensor metadata matches the first export. Four consecutive quiet pairs have alternating training/testing acquisition labels. They remain validation data for the same future affine model fitted on six-face static positions, not training data for a second model. These are within-session repeats. Run 9 is shaking, retained separately and in full.
+
+```powershell
+python scripts/preprocess_angles.py "data/raw/Acceleration with g 2026-10-22 10-55-51"
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+The Windows interpreter fallback documented below also works for these commands. The standard-library script reuses the strict exported-header reader and original START/PAUSE partitioner. Outputs under `processed/angles-2026-10-22/` are `training.csv` (58,204 rows), `testing.csv` (58,885), and `limit.csv` (14,745). All original numeric strings and timestamps are preserved. Added source-row, segment/pair, split, support orientation, geometry and inclusion fields make exclusions reversible. `include=1` selects `[START+1 s, PAUSE-1 s)` in quiet runs: **54,440 training** and **55,122 testing** samples. This fixed timing precaution was chosen before error evaluation, removes no interior outliers, and is not rest detection or proof of stillness. All 14,745 shaking rows have `include=1`; never interpret that flag as a stationary label.
+
+The user confirms the phone makes a right triangle with **16 cm along its length as the hypotenuse**, and wall heights **10 cm** (runs 1–4) and **5 cm** (runs 5–8). Thus `asin(h/L)` gives **38.6822°** and **18.2100°** relative to horizontal. Runs 1–2 and 5–6 are screen-up; runs 3–4 and 7–8 are on the side with the screen perpendicular to the table. This is recorded in the [protocol](splits/angles-2026-10-22/protocol.json). Exact signed reference vectors, case/rate settings and ruler/contact uncertainties remain unspecified. Two distinct heights alone do not satisfy the planned four distinct ramp angles across 0–45°.
+
+Git preserves the hashed protocol's exact bytes, as it does for raw sources, so its audit hash remains valid across Windows/Linux checkouts.
+
+See [audit](splits/angles-2026-10-22/README.md), [manifest](splits/angles-2026-10-22/manifest.json) and [trace review](splits/angles-2026-10-22/trace-review.svg). The review uses shared quiet-panel scales and a separately labelled shaking scale, preserving pixel extrema. Quiet per-axis standard deviations are about 0.008–0.011 m/s²; this describes signal variability, not accuracy. The shaking vector magnitude reaches **119.821 m/s²**. No independent dynamic force reference or fitted model is available, so this illustrates the limits of gravity-only tilt interpretation, not established affine failure or clipping. Raw files remain unchanged; new generated CSVs stay ignored, with shared script/protocol/audit reproducible in Git. Existing ignore rules are unchanged.
 
 Use phyphox **Acceleration with g**, on one phone with a consistent case configuration. Its physical accelerometer includes the gravity reference. Do not use **Acceleration (without g)** for the static calibration.
 

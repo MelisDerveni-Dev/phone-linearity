@@ -10,7 +10,15 @@ It gives either teammate's coding agent the project context and collaboration ru
 3. Read the files involved in the current request before editing them. This handoff is a dated snapshot; verify the current implementation.
 4. Stay within the user's current request. The course brief describes the eventual submission; it does not authorize implementing every future milestone immediately.
 
-## Current milestone: 21 October 2026
+## Update: 22 October 2026 angle preprocessing
+
+The user supplied a new export and explicitly authorized angle calculation and preprocessing. `scripts/preprocess_angles.py` inventories all 131,834 samples in nine START/PAUSE runs: four quiet training/testing pairs and one shaking run, each 30–33 seconds. All rows/numeric strings remain intact in separate ignored `data/processed/angles-2026-10-22/` CSVs. Quiet runs have a reversible one-second boundary inclusion mask, not an adaptive rest detector. Shaking remains untrimmed. Shared protocol, hashes, per-run summaries and an extrema-preserving SVG review live in `data/splits/angles-2026-10-22/`. Eight Python unittest tests (including the five original split tests), all 31 Node tests and syntax checks pass; the SVG was rendered and visually inspected.
+
+The user confirms 16 cm contact-to-contact hypotenuse, 10 cm height for runs 1–4 and 5 cm for runs 5–8. Calculated angles are 38.6822° and 18.2100° relative to horizontal. Runs 1–2 and 5–6 are screen-up; 3–4 and 7–8 are on the side with screen perpendicular to the table. Exact signed reference vectors and dimensional uncertainty remain unspecified. Ramp acquisition labels preserve order; ramps remain validation for the same future model fitted on static faces, not fitting a second model. No fitting, adaptive rest detector, error improvement, clipping or affine failure is established. Shaking reaches vector magnitude 119.821 m/s² but has no independent force reference. Ignore rules and existing static CSV bytes are unchanged. Publication branch: `data/angle-preprocessing-2026-10-22`. The raw export, preprocessing script/tests, protocol and audit are shared; generated angle CSVs remain ignored and reproducible.
+
+This update supersedes older statements below that all angle collection/preprocessing is deferred. General scientific rest detection and fitting remain pending.
+
+## Previous milestone: 21 October 2026
 
 The user requested the report first, the directory structure, a live phone-to-screen demo, a GitHub README, publication on a public branch, and a separate private implementation guide. The initial milestone is complete.
 

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "boundary_trim_s": 1.0,
+  "contact_spacing_m": 0.16,
+  "geometry_note": "User confirms a right triangle: phone length is the 16 cm hypotenuse from table to wall contact. Vertical wall height is 10 cm for runs 1–4, 5 cm for runs 5–8. Angles are relative to horizontal. Shaking has no reference geometry.",
+  "height_uncertainty_m": null,
+  "length_uncertainty_m": null,
+  "orientation_note": "User confirms first pair at each height is screen-up; second pair is on the side with screen perpendicular to table. Exact signed reference vectors are not assigned from observed component signs.",
+  "runs": [
+    {"pair_id": 1, "kind": "ramp", "split": "training", "support_orientation": "screen_up", "height_m": 0.10},
+    {"pair_id": 1, "kind": "ramp", "split": "testing", "support_orientation": "screen_up", "height_m": 0.10},
+    {"pair_id": 2, "kind": "ramp", "split": "training", "support_orientation": "on_side_screen_perpendicular", "height_m": 0.10},
+    {"pair_id": 2, "kind": "ramp", "split": "testing", "support_orientation": "on_side_screen_perpendicular", "height_m": 0.10},
+    {"pair_id": 3, "kind": "ramp", "split": "training", "support_orientation": "screen_up", "height_m": 0.05},
+    {"pair_id": 3, "kind": "ramp", "split": "testing", "support_orientation": "screen_up", "height_m": 0.05},
+    {"pair_id": 4, "kind": "ramp", "split": "training", "support_orientation": "on_side_screen_perpendicular", "height_m": 0.05},
+    {"pair_id": 4, "kind": "ramp", "split": "testing", "support_orientation": "on_side_screen_perpendicular", "height_m": 0.05},
+    {"pair_id": null, "kind": "shaking", "split": "limit", "height_m": null}
+  ]
+}

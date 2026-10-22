@@ -4,7 +4,7 @@
 
 A small laboratory for a big question: **can one affine model describe your phone's accelerometer?** A live phyphox viewer pairs the phone's original signal with the same signal after an affine correction, in a parchment-and-brass instrument panel inspired by a scientist turning gears.
 
-**Current milestone · 21 October 2026.** Report and live demo foundations are ready. The first static phone export has been inventoried and split into complete-repeat training/testing datasets. Independent ramps, preprocessing, the Python fitting package, fitted coefficients, empirical improvements and a confirmed failure case remain pending.
+**Current milestone · 22 October 2026.** Report and live demo foundations are ready. Static repeats and a new nine-run angle/shaking export have been inventoried and split. Ramp heights/orientations are confirmed and quiet runs have a reversible boundary mask. The Python fitting package, scientific rest detector, fitted coefficients, empirical improvements and a confirmed affine failure case remain pending.
 
 **For teammates and coding agents:** read [AGENTS.md](AGENTS.md) first for the current status, architecture, scientific rules, collaboration workflow, and next milestones.
 
@@ -146,6 +146,15 @@ npm run check
 Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, correction versus reference error, orientation quaternion math, physical phone proportions, independent attitude timestamps, and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
 
 ## Reproduce the static dataset split
+
+For the newer angle/shaking export, run:
+
+```powershell
+python scripts/preprocess_angles.py "data/raw/Acceleration with g 2026-10-22 10-55-51"
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+See [the angle audit](data/splits/angles-2026-10-22/README.md) and [trace review](data/splits/angles-2026-10-22/trace-review.svg). Four consecutive training/testing pairs remain separate from six-face calibration fitting; the ninth run is shaking. The same future affine model will be tested on these angles, without fitting a second model. Angles from confirmed 16 cm contact spacing are 38.6822° (10 cm height) and 18.2100° (5 cm). All original samples survive with source-row provenance. Quiet-run `include=1` excludes one second at each acquisition boundary; this is not a scientific rest detector. New generated CSVs remain ignored and reproducible; ignore rules are unchanged. Shaking alone does not establish affine sensor failure.
 
 With Python 3.10 or newer, from the project root:
 
