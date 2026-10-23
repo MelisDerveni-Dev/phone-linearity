@@ -1,6 +1,26 @@
 # Decision log
 
-## 2026-10-22 ? Publish angle datasets
+## 2026-10-23 - Frozen four-height validation and independent typography review
+Decision: use the newly supplied 0/4/8/11 cm screen-up runs as a separate validation session with the existing S, b and training-only screening policy, checked by exact hashes. Preserve all input bytes and earlier outcomes; treat camera-supported zero as nominal and also report raised-only sensitivity. Version compact audit/results/figures and leave the new large derived CSV ignored/reproducible. Document the demonstrated static benefit as the report's main result while retaining measured tilt limitations without selective omission.
+Alternatives: retrain on the new validation, relabel measured references to match readings, discard the camera-supported zero without disclosure, or replace the earlier experiment silently.
+Evidence: 57,686 samples in four 29.76-31.55 s runs; four-run tilt RMSE 3.988562 -> 4.110647 degrees; raised-only 4.604338 -> 4.740403. No parameter or threshold changes. A user-requested independent visual reviewer found that the font embedding regex dropped most KaTeX font-face declarations; preserving CSS declaration boundaries and checking actual loaded fonts fixed all matrices. Final independent inspection passed all four pages with no clipping/collisions.
+
+## 2026-10-23 - Typeset report and preserve measured angle validation
+Decision: replace plain-text PDF equation substitution with LaTeX rendered through local KaTeX, embedding fonts/figures into offline HTML and printing the same four-page layout to PDF. Use proper matrix notation, result tables, short paragraphs and readable report-specific plots. Keep document dependencies separate from the runtime viewer; version report sources, lockfile and generated artifacts without changing ignore rules.
+Alternatives: retain Python-list coefficients or use runtime CDN fonts/math scripts.
+Evidence: the user requested better equation/matrix typography and report aesthetics. Current coefficients and measured results are unchanged. The user confirms the angle geometry and plans four new distinct angles for validation only. Existing adverse angle results remain evidence; neither retraining on them nor silently replacing their references is authorized by that plan.
+
+## 2026-10-23 - Confirmed authorship, shared choices and model presentation
+Decision: name Melis Derveni and Harsimranjeet Kaur in report text, PDF author metadata, README and package metadata. Record Melis's measurements/experiments and other deliverables, Harsimranjeet's model training/testing/evaluation, and both authors' joint discussion/agreement on the approach and its tradeoffs. Keep physical signature/date fields blank. Present the fitted model as m = S a + b, with no separate predicted noise term; b remains a constant fitted bias, and validation errors remain measured discrepancies.
+Alternatives: leave authorship placeholders, imply isolated responsibility, claim an alternative model was tested when it was only discussed, or introduce an additional fitted error term.
+Evidence: the user supplied both full names, contribution allocation and joint decision-making, and requested the simplified equation. The report and separate team-contributions document explain advantages, limitations and reasons for the chosen approach without changing any fitted parameters or validation outcomes.
+
+## 2026-10-23 — Separate analysis, frozen stability policy and honest validation
+Decision: preserve the teammate notebook and extend its forward affine regression in separate Python modules. Fit equally weighted static pose means using user-authorized nominal ±g references. Choose a robust 0.25 s local-vector-RMS threshold on static training only, freeze before testing, trim one second at boundaries and retain continuous stable intervals of at least one second. Do not filter by gravity magnitude, target discrepancy or held-out improvement. Use unsigned long-axis angle validation because full signed reference vectors are unspecified. Version compact measured results, four analysis figures and a named fitted JSON; keep large masks ignored/reproducible under existing rules.
+Alternatives: edit the notebook, tune on angle errors, infer exact orientations from measured vectors, or omit negative validation results.
+Evidence: the full-row notebook result reproduces independently. Screened static vector RMSE is 0.215965 -> 0.111114 m/s²; held-out angle RMSE worsens 3.267287 -> 3.726342 degrees. The static -Z error also worsens slightly. All acquisition hashes and notebook bytes remain unchanged. Tests verify recovery, invalid/deficient inputs, stability/gaps and policy freezing; numerical/browser checks verify exported calibration compatibility. The four-page measured report includes the limitations. No independently referenced affine failure or physical fitted-phone rehearsal is claimed. Ruler/contact uncertainty, case/rate consistency, signatures remain for Melis Derveni and Harsimranjeet Kaur.
+
+## 2026-10-22 — Publish angle datasets
 Decision: at the user's explicit request, version all three generated angle datasets (training.csv, testing.csv and limit.csv) alongside the already-published raw export. Add narrowly scoped ignore exceptions and preserve exact bytes in Git so existing audit hashes remain valid. Other generated data stays ignored.
 Alternatives: require teammates to regenerate the CSVs from the raw export.
 Evidence: the user reports the new data is missing from Git. The raw export was already published on data/angle-preprocessing-2026-10-22, but generated CSVs were ignored. All source/output hashes match the existing audit; publishing adds no new preprocessing or scientific results.
@@ -18,7 +38,7 @@ Alternatives: implement the entire pipeline today or invent illustrative results
 Evidence: explicit user scope; no phone dataset exists yet.
 
 ## 2026-10-20 — Sensor and hypothesis
-Decision: use Acceleration with g and test m = S a + b + noise with a full 3×3 S as the planned model.
+Decision: use Acceleration with g and test m = S a + b with a full 3×3 S as the planned model.
 Alternatives: gravity-removed virtual sensor; diagonal gains only.
 Evidence: the supplied brief requires gravity-based calibration and full-model assessment; the full matrix has not yet been shown to outperform the diagonal model.
 
