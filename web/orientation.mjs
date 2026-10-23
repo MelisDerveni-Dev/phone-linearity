@@ -108,7 +108,8 @@ export function angularSpeedDegrees(samples,windowSeconds=.15) {
 }
 
 // Explicit presentation policy, not a detected sensor failure or confidence score.
-export function createMotionGuard({pauseMagnitude=60,resumeMagnitude=30,pauseDegS=720,resumeDegS=180,settleSeconds=.15}={}) {
+// Quiet time must be observed continuously: a gap longer than maxGapSeconds restarts it.
+export function createMotionGuard({pauseMagnitude=60,resumeMagnitude=30,pauseDegS=720,resumeDegS=180,settleSeconds=.15,maxGapSeconds=.25}={}) {
   let paused=false,quietSince=null,lastTime=null,reason=null;
   const reset=()=>{paused=false;quietSince=null;lastTime=null;reason=null;};
   return {
@@ -116,6 +117,7 @@ export function createMotionGuard({pauseMagnitude=60,resumeMagnitude=30,pauseDeg
     update({time,evidence,angularSpeedDegS=null,rotationAvailable=false}){
       if(!Number.isFinite(time))return {paused,settling:false,reason};
       if(lastTime!==null&&time<lastTime)reset();
+      const gap=lastTime===null?0:time-lastTime;
       lastTime=time;
       const fastRotation=Number.isFinite(angularSpeedDegS)&&angularSpeedDegS>pauseDegS;
       const strongAcceleration=Number.isFinite(evidence.norm)&&evidence.norm>pauseMagnitude;
@@ -125,7 +127,7 @@ export function createMotionGuard({pauseMagnitude=60,resumeMagnitude=30,pauseDeg
         const quiet=Number.isFinite(evidence.norm)&&evidence.norm<resumeMagnitude&&(!rotationAvailable||(Number.isFinite(angularSpeedDegS)&&angularSpeedDegS<resumeDegS));
         if(!quiet)quietSince=null;
         else{
-          quietSince??=time;
+          if(quietSince===null||gap>maxGapSeconds)quietSince=time;
           if(time-quietSince>=settleSeconds){paused=false;quietSince=null;reason=null;}
         }
       }

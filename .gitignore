@@ -27,3 +27,6 @@ results/metrics/*
 !results/metrics/.gitkeep
 calibration/params.json
 *.tmp
+
+# Default output of `python -m calib apply` (large per-sample CSVs; reproducible)
+results/applied/

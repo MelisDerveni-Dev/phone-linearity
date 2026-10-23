@@ -1,6 +1,6 @@
 # Measured analysis: 23 October 2026
 
-Extends the teammate's notebook regression in separate files; notebooks and acquisition datasets are unchanged. Regenerate with `python -m calib.analysis` after editable installation.
+Extends the teammate's notebook regression in separate files; notebooks and acquisition datasets are unchanged. Regenerate with `python -m calib analyse` after editable installation. The archived `calibration/fit-static-2026-10-21.json` and `frozen-policy.json` are verified against this reproduction and never silently rewritten.
 
 ## Static repeat holdout
 
@@ -66,6 +66,8 @@ Unsigned long-axis tilt RMSE: **3.267287 -> 3.726342 degrees** over eight run me
     "stability_policy": "0.25 s local vector RMS; threshold=max(0.05,training median+8*1.4826*MAD); 1 s boundary trim, 1 s minimum interval; gaps >0.1 s break continuity."
   },
   "diagnostics": {
+    "structure": "full",
+    "parameters": 12,
     "rank": 4,
     "singular_values": [
       13.873435046880065,
@@ -90,7 +92,7 @@ Included static samples: 80677 training and 80474 testing.
 - Nominal +/-g references include support alignment error; fit is not intrinsic sensor identification.
 - Ruler resolution, contact uncertainty, case and user-selected rate remain unconfirmed.
 - Ramps use unsigned long-axis tilt only; signed full reference vectors are not independently established.
-- Only two ramp angles; no confirmed affine-model failure; live physical rehearsal pending.
+- This file covers the 22 October ramps (two heights). The 23 October four-height session, the model comparison and the limit evidence are in results/angle-validation-2026-10-23 and results/evidence-2026-10-23.
 - Low variation is a rest heuristic, not proof of stationarity.
 
 Shaking is a limit of gravity-only interpretation, not proof of affine sensor failure. Review all four PNGs; positive and negative changes are retained. No thresholds or coefficients were revised after evaluating held-out errors.

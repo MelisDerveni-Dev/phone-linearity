@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import {setTimeout as delay} from 'node:timers/promises';
-import {createServer,correct,validateCalibration,normalizePhoneUrl,discoverBuffers,discoverAttitudeBuffers} from '../scripts/live.mjs';
+import {createServer,createObservatory,correct,validateCalibration,normalizePhoneUrl,discoverBuffers,discoverAttitudeBuffers} from '../scripts/live.mjs';
 
 const config={title:'Acceleration with g',inputs:[{source:'accelerometer',outputs:[{x:'accX'},{y:'accY'},{z:'accZ'},{t:'acc_time'}]}],buffers:['accX','accY','accZ','acc_time'].map(name=>({name,size:0}))};
 const listen=server=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(`http://127.0.0.1:${server.address().port}`)));
@@ -171,4 +171,25 @@ test('optional fused attitude uses its own clock and does not pair by accelerati
     app.observatory.disconnect();assert.equal(app.observatory.snapshot().orientation,null);assert.equal(app.observatory.snapshot().attitudeAvailable,false);
     assert.deepEqual(app.observatory.snapshot().orientationSamples,[]);
   }finally{app.observatory.close();await close(app.server);await close(phone);}
+});
+
+test('a failed connection broadcasts the cleared stream instead of leaving windows on the old source',async()=>{
+  const broken=http.createServer((req,res)=>{res.statusCode=500;res.end('{}');});
+  const phoneUrl=await listen(broken);
+  const observatory=createObservatory();
+  try {
+    for(const url of ['http://8.8.8.8:8080',phoneUrl]){
+      observatory.setPreview(true);
+      await until(()=>observatory.snapshot().points.length>0);
+      const before=observatory.updates({since:-1});
+      let notified=0;const unsubscribe=observatory.subscribe(()=>notified++);
+      await assert.rejects(observatory.connect({url}));
+      unsubscribe();
+      const after=observatory.updates({since:before.cursor,epoch:before.epoch});
+      assert.ok(notified>0,'subscribers hear about the reset');
+      assert.equal(after.source,'none');assert.equal(after.connected,false);
+      assert.equal(after.append,false,'windows must replace, not extend, the synthetic history');
+      assert.equal(after.points.length,0);assert.match(after.error,/Connection failed/);
+    }
+  } finally {observatory.close();await close(broken);}
 });

@@ -39,6 +39,42 @@ def load_csv(path):
     return Recording(rows, values[:, 0], values[:, 1:4], segment)
 
 
+def read_export(folder):
+    """Read an unchanged phyphox export: Raw Data.csv plus meta/time.csv events.
+
+    Returns a Recording whose segments are the half-open [START, PAUSE)
+    acquisition intervals, and the interval table used by ``screen``.
+    """
+    folder = Path(folder)
+    with (folder / "Raw Data.csv").open(encoding="utf-8-sig", newline="") as stream:
+        reader = csv.reader(stream)
+        if next(reader, None) != HEADERS:
+            raise ValueError("Unexpected acceleration CSV headers/units")
+        values = np.array([[float(v) for v in row] for row in reader])
+    if values.ndim != 2 or not len(values) or values.shape[1] != len(HEADERS) or not np.isfinite(values).all():
+        raise ValueError("Empty, ragged or nonfinite acceleration export")
+    if np.any(np.diff(values[:, 0]) <= 0):
+        raise ValueError("Nonincreasing timestamps")
+    with (folder / "meta/time.csv").open(encoding="utf-8-sig", newline="") as stream:
+        events = list(csv.DictReader(stream))
+    if not events or len(events) % 2 or any((a["event"], b["event"]) != ("START", "PAUSE") for a, b in zip(events[::2], events[1::2])):
+        raise ValueError("Expected complete alternating START/PAUSE events")
+    intervals, segment = {}, np.zeros(len(values), dtype=int)
+    for k, (start, stop) in enumerate(zip(events[::2], events[1::2]), 1):
+        lo, hi = float(start["experiment time"]), float(stop["experiment time"])
+        if not lo < hi:
+            raise ValueError("Invalid acquisition interval")
+        ids = (values[:, 0] >= lo) & (values[:, 0] < hi)
+        if not ids.any() or segment[ids].any():
+            raise ValueError("Empty or overlapping acquisition interval")
+        segment[ids] = k
+        intervals[k] = {"segment_id": k, "start_s": lo, "end_s": hi}
+    if not segment.all():
+        raise ValueError("Samples remain outside acquisition events")
+    rows = [{"source_row": i + 1, "segment_id": int(s), "split": "validation"} for i, s in enumerate(segment)]
+    return Recording(rows, values[:, 0], values[:, 1:4], segment), intervals
+
+
 def rolling_variation(t, xyz, window_s=.25, max_gap_s=.1):
     """RMS vector variation about a local mean; never distance from a target."""
     lo = np.searchsorted(t, t - window_s / 2, side="left")

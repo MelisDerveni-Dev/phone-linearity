@@ -112,3 +112,14 @@ test('gravity-only motion policy resumes without requiring an unavailable attitu
   assert.equal(guard.update({time:1.16,evidence:{level:'steady',norm:9.81}}).paused,false);
   guard.reset();assert.equal(guard.update({time:2,evidence:{level:'steady',norm:9.81}}).paused,false);
 });
+
+test('motion hold needs continuously observed quiet time; a data gap restarts recovery',()=>{
+  const guard=createMotionGuard(),quiet={level:'steady',norm:9.81};
+  assert.equal(guard.update({time:0,evidence:{level:'uncertain',norm:61}}).paused,true);
+  assert.equal(guard.update({time:.05,evidence:quiet}).settling,true);
+  const afterGap=guard.update({time:10,evidence:quiet});
+  assert.equal(afterGap.paused,true,'ten seconds without samples are not ten seconds of quiet');
+  assert.equal(afterGap.settling,true);
+  assert.equal(guard.update({time:10.1,evidence:quiet}).paused,true);
+  assert.equal(guard.update({time:10.16,evidence:quiet}).paused,false,'resumes after 0.15 s of fresh quiet samples');
+});

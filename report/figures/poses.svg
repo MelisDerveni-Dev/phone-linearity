@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 790 200" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#233431">
+  <defs>
+    <marker id="up" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#23665e"/>
+    </marker>
+    <marker id="ax" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a77f42"/>
+    </marker>
+  </defs>
+
+  <!-- Phone axes key -->
+  <g>
+    <rect x="22" y="58" width="44" height="88" rx="7" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="26" y="62" width="36" height="80" rx="4" fill="#dfeae4"/>
+    <circle cx="44" cy="67" r="2" fill="#233431"/>
+    <line x1="44" y1="102" x2="88" y2="102" stroke="#a77f42" stroke-width="2" marker-end="url(#ax)"/>
+    <line x1="44" y1="102" x2="44" y2="34" stroke="#a77f42" stroke-width="2" marker-end="url(#ax)"/>
+    <circle cx="44" cy="102" r="5" fill="#fff" stroke="#a77f42" stroke-width="2"/>
+    <circle cx="44" cy="102" r="1.6" fill="#a77f42"/>
+    <text x="91" y="106" fill="#a77f42" font-weight="bold">x</text>
+    <text x="49" y="40" fill="#a77f42" font-weight="bold">y</text>
+    <text x="52" y="118" fill="#a77f42" font-weight="bold">z</text>
+    <text x="50" y="172" text-anchor="middle" font-weight="bold">Phone axes</text>
+    <text x="50" y="188" text-anchor="middle" font-size="10" fill="#66736e">z points out of the screen</text>
+  </g>
+  <line x1="118" y1="20" x2="118" y2="190" stroke="#d9e1da"/>
+
+  <!-- 1. Screen up: +z up -->
+  <g transform="translate(128 0)">
+    <line x1="56" y1="122" x2="56" y2="92" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="108" fill="#23665e" font-weight="bold">+z</text>
+    <rect x="10" y="144" width="92" height="9" rx="2" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="12" y="144" width="88" height="3" fill="#23665e"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Screen up</text>
+  </g>
+  <!-- 2. Screen down: -z up -->
+  <g transform="translate(238 0)">
+    <line x1="56" y1="122" x2="56" y2="92" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="108" fill="#23665e" font-weight="bold">−z</text>
+    <rect x="10" y="144" width="92" height="9" rx="2" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="12" y="150" width="88" height="3" fill="#23665e"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Screen down</text>
+  </g>
+  <!-- 3. Standing on bottom edge: +y up -->
+  <g transform="translate(348 0)">
+    <line x1="56" y1="52" x2="56" y2="22" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="38" fill="#23665e" font-weight="bold">+y</text>
+    <rect x="34" y="62" width="44" height="91" rx="7" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="38" y="66" width="36" height="83" rx="4" fill="#dfeae4"/>
+    <circle cx="56" cy="71" r="2" fill="#233431"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Standing up</text>
+  </g>
+  <!-- 4. Upside down: -y up -->
+  <g transform="translate(458 0)">
+    <line x1="56" y1="52" x2="56" y2="22" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="38" fill="#23665e" font-weight="bold">−y</text>
+    <rect x="34" y="62" width="44" height="91" rx="7" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="38" y="66" width="36" height="83" rx="4" fill="#dfeae4"/>
+    <circle cx="56" cy="144" r="2" fill="#233431"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Upside down</text>
+  </g>
+  <!-- 5. Right edge up: +x up (top of phone points left) -->
+  <g transform="translate(568 0)">
+    <line x1="56" y1="98" x2="56" y2="68" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="84" fill="#23665e" font-weight="bold">+x</text>
+    <rect x="10" y="109" width="92" height="44" rx="7" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="14" y="113" width="84" height="36" rx="4" fill="#dfeae4"/>
+    <circle cx="19" cy="131" r="2" fill="#233431"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Right edge up</text>
+  </g>
+  <!-- 6. Left edge up: -x up (top of phone points right) -->
+  <g transform="translate(678 0)">
+    <line x1="56" y1="98" x2="56" y2="68" stroke="#23665e" stroke-width="2" marker-end="url(#up)"/>
+    <text x="64" y="84" fill="#23665e" font-weight="bold">−x</text>
+    <rect x="10" y="109" width="92" height="44" rx="7" fill="#fff" stroke="#233431" stroke-width="1.5"/>
+    <rect x="14" y="113" width="84" height="36" rx="4" fill="#dfeae4"/>
+    <circle cx="93" cy="131" r="2" fill="#233431"/>
+    <line x1="2" y1="153" x2="110" y2="153" stroke="#a77f42" stroke-width="2"/>
+    <text x="56" y="172" text-anchor="middle">Left edge up</text>
+  </g>
+  <text x="458" y="194" text-anchor="middle" font-size="10" fill="#66736e">Green arrow: the axis pointing straight up, which reads +9.81 m/s² at rest. Edge and upright poses were supported against a book.</text>
+</svg>

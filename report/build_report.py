@@ -1,4 +1,4 @@
-"""Typeset LaTeX with local KaTeX; create self-contained HTML and four-page PDF.
+"""Typeset LaTeX with local KaTeX; create a self-contained HTML page and a 3-4 page PDF.
 
 Setup: npm --prefix report ci; pip install -e ".[report]"
 Uses installed Edge/Chrome, or Playwright Chromium (playwright install chromium).
@@ -12,7 +12,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
-import csv
+
 
 from playwright.sync_api import sync_playwright
 from pypdf import PdfReader, PdfWriter
@@ -49,45 +49,13 @@ def katex_css():
     return re.sub(r"url\(([^)]+)\)", embed, css)
 
 
-def report_figures():
-    """Report-specific, readable single-panel plots from unchanged result tables."""
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    result = BASE.parent / "results"
-    target = BASE / "figures"
-    target.mkdir(exist_ok=True)
-    specs = [
-        ("analysis-2026-10-23/static-test.csv", "pose", "vector_error_m_s2", "Vector error (m/s²)", "static-vector.png", "#287268"),
-        ("angle-validation-2026-10-23/angle-validation.csv", "height_m", "absolute_error_deg", "Tilt error (degrees)", "angle-tilt.png", "#bf7055"),
-    ]
-    for filename, label, key, ylabel, image, color in specs:
-        with (result / filename).open(encoding="utf-8", newline="") as stream:
-            rows = list(csv.DictReader(stream))
-        fig, ax = plt.subplots(figsize=(4.7, 3.9))
-        x = list(range(len(rows)))
-        ax.bar([v-.18 for v in x], [float(r["raw_"+key]) for r in rows], .36, label="Raw", color="#b1b8b2")
-        ax.bar([v+.18 for v in x], [float(r["corrected_"+key]) for r in rows], .36, label="Corrected", color=color)
-        ax.set_xticks(x, [r[label] if label == "pose" else f"{float(r[label])*100:.0f} cm" for r in rows])
-        ax.set_ylabel(ylabel, fontsize=11)
-        ax.set_xlabel("Static pose" if label == "pose" else "Wall height (0 cm nominal)", fontsize=10)
-        ax.legend(frameon=False, fontsize=9)
-        ax.grid(axis="y", color="#e1e6e1", linewidth=.6)
-        ax.set_axisbelow(True)
-        for spine in ("top", "right", "left"):
-            ax.spines[spine].set_visible(False)
-        ax.spines["bottom"].set_color("#aebcb1")
-        ax.tick_params(labelsize=10, length=0)
-        fig.tight_layout(pad=.8)
-        fig.savefig(target / image, dpi=200, facecolor="#fffefa")
-        plt.close(fig)
-
-
 def make():
     node = shutil.which("node")
     if not node or not (BASE / "node_modules/katex").exists():
         raise SystemExit("Install document tooling first: npm --prefix report ci")
-    report_figures()
+    # Charts are drawn from existing result tables; nothing is refitted.
+    import figures
+    figures.main()
     rendered = subprocess.run([node, str(BASE / "render_report.cjs"), str(BASE / "report.md")],
                               check=True, capture_output=True, encoding="utf-8")
     pages = json.loads(rendered.stdout)["pages"]
@@ -99,9 +67,9 @@ def make():
             return 'src="' + data_uri(path) + '"'
         content = re.sub(r'src="([^"\n]+)"', embed_image, content)
         sections.append(f'''<article class="page" aria-label="Report page {i}">
-<header class="page-header"><span>The Affine Observatory</span><span>23 October 2026 · measured draft</span></header>
+<header class="page-header"><span>The Affine Observatory</span><span>Final report · 23 October 2026</span></header>
 <main class="page-content">{content}</main>
-<footer class="page-footer"><span>Melis Derveni · Harsimranjeet Kaur</span><span>{i} / 4</span></footer></article>''')
+<footer class="page-footer"><span>Melis Derveni · Harsimranjeet Kaur</span><span>{i} / {len(pages)}</span></footer></article>''')
     license_text = (BASE / "node_modules/katex/LICENSE").read_text(encoding="utf-8")
     html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -146,15 +114,15 @@ def make():
         browser.close()
     from io import BytesIO
     reader = PdfReader(BytesIO(pdf_bytes))
-    if len(reader.pages) != 4:
-        raise RuntimeError(f"Expected four pages; got {len(reader.pages)}")
+    if len(reader.pages) != len(pages) or not 3 <= len(reader.pages) <= 4:
+        raise RuntimeError(f"Expected {len(pages)} pages within the 3-4 page limit; got {len(reader.pages)}")
     writer = PdfWriter(clone_from=reader)
     writer.add_metadata({"/Title": "Is your phone linear?", "/Author": AUTHORS,
                          "/Subject": "Measured affine accelerometer calibration and held-out validation"})
-    target = BASE / "report-draft.pdf"
+    target = BASE / "report.pdf"
     with target.open("wb") as stream:
         writer.write(stream)
-    print(f"{html_path}\n{target}\nVerified: 4 pages; local KaTeX fonts; no content overflow.")
+    print(f"{html_path}\n{target}\nVerified: {len(reader.pages)} pages; local KaTeX fonts; no content overflow.")
 
 
 if __name__ == "__main__":

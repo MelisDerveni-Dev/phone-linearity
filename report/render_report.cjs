@@ -6,7 +6,7 @@ const MarkdownIt = require('markdown-it');
 const source = fs.readFileSync(process.argv[2], 'utf8');
 const markdown = new MarkdownIt({html: true, typographer: true});
 const pages = source.split(/<!--\s*page\s*-->/);
-if (pages.length !== 4) throw new Error('The report must have four explicit pages.');
+if (pages.length < 3 || pages.length > 4) throw new Error('The report must have three or four explicit pages (course limit).');
 const rendered = pages.map(page => {
   const math = [];
   const slot = (tex, displayMode) => {

@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .data import load_csv, screen
-from .model import AffineCalibration
+from .model import AffineCalibration, write_json
 
 ROOT = Path(__file__).resolve().parents[2]
 G = 9.81
@@ -25,7 +25,36 @@ def digest(path):
 
 
 def json_file(path, value):
-    path.write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    write_json(path, value)
+
+
+def same_values(a, b, rtol=1e-9, atol=1e-12):
+    """Semantic JSON equality; floats may differ only by numerical-library rounding."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        return a.keys() == b.keys() and all(same_values(a[k], b[k], rtol, atol) for k in a)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(same_values(x, y, rtol, atol) for x, y in zip(a, b))
+    if isinstance(a, bool) or isinstance(b, bool):
+        return a is b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return bool(np.isclose(a, b, rtol=rtol, atol=atol))
+    return a == b
+
+
+def freeze_or_verify(path, value, refreeze=False):
+    """Write a frozen artifact once; afterwards only verify the reproduction.
+
+    Archived bytes are hashed by later validations, so a rerun on another
+    platform must never rewrite them (newline or last-digit differences).
+    """
+    path = Path(path)
+    if path.exists() and not refreeze:
+        if not same_values(json.loads(path.read_text(encoding="utf-8")), value):
+            raise ValueError(f"Reproduced values differ from archived {path.name}; "
+                             "inspect the difference or rerun with --refreeze to replace it deliberately")
+        return "verified"
+    write_json(path, value)
+    return "written"
 
 
 def csv_file(path, rows):
@@ -88,7 +117,7 @@ def save_masks(name, rec, include, variation, boundary, masks):
         for r, seg, keep, v, edge in zip(rec.rows, rec.segment, include, variation, boundary)])
 
 
-def run(root=ROOT):
+def run(root=ROOT, refreeze=False):
     root = Path(root)
     output = root / "results/analysis-2026-10-23"
     masks = root / "data/processed/analysis-2026-10-23"
@@ -122,9 +151,12 @@ def run(root=ROOT):
                   "stability_policy": "0.25 s local vector RMS; threshold=max(0.05,training median+8*1.4826*MAD); 1 s boundary trim, 1 s minimum interval; gaps >0.1 s break continuity."}
     model = AffineCalibration.fit(np.array(list(POSES.values())), pose_means(train, train_mask), provenance)
     calibration_path = root / "calibration/fit-static-2026-10-21.json"
-    model.save(calibration_path)
-    json_file(output / "frozen-policy.json", {**provenance, "diagnostics": model.diagnostics,
-        "selection": "Frozen from training before loading test/angle samples; not tuned for held-out improvement."})
+    # The archived fit predates the structure/parameter diagnostics keys; compare like with like.
+    archived_diagnostics = {k: v for k, v in model.diagnostics.items() if k not in ("structure", "parameters")}
+    reproduction = {
+        "calibration": freeze_or_verify(calibration_path, {**model.to_dict(), "diagnostics": archived_diagnostics}, refreeze),
+        "policy": freeze_or_verify(output / "frozen-policy.json", {**provenance, "diagnostics": archived_diagnostics,
+            "selection": "Frozen from training before loading test/angle samples; not tuned for held-out improvement."}, refreeze)}
     save_masks("static-training-mask", train, train_mask, train_var, train_edge, masks)
     # Nothing below this point changes the model or stability policy.
     test = load_csv(static_dir / "testing.csv")
@@ -191,12 +223,13 @@ def run(root=ROOT):
               "notebook_all_row_reproduction": baseline_summary,
               "diagnostics": model.diagnostics, "source_sha256": sources,
               "notebook_sha256_unchanged": notebook_hashes,
+              "frozen_artifacts": reproduction,
               "versions": {"python": platform.python_version(), "numpy": np.__version__, "matplotlib": matplotlib.__version__},
               "limitations": ["Static tests are within-session repeats, not independent sessions.",
                   "Nominal +/-g references include support alignment error; fit is not intrinsic sensor identification.",
                   "Ruler resolution, contact uncertainty, case and user-selected rate remain unconfirmed.",
                   "Ramps use unsigned long-axis tilt only; signed full reference vectors are not independently established.",
-                  "Only two ramp angles; no confirmed affine-model failure; live physical rehearsal pending.",
+                  "This file covers the 22 October ramps (two heights). The 23 October four-height session, the model comparison and the limit evidence are in results/angle-validation-2026-10-23 and results/evidence-2026-10-23.",
                   "Low variation is a rest heuristic, not proof of stationarity."]}
     json_file(output / "metrics.json", result)
     make_figures(output, train, train_mask, train_var, train_edge, threshold,
@@ -204,7 +237,7 @@ def run(root=ROOT):
     markdown_results(output, result, angles, summaries, model)
     if notebook_hashes != {p.name: digest(p) for p in root.glob("*.ipynb")}:
         raise RuntimeError("A teammate notebook changed during analysis")
-    print(json.dumps({"static": summary, "angles": angle_summary, "calibration": str(calibration_path)}, indent=2))
+    print(json.dumps({"static": summary, "angles": angle_summary, "frozen_artifacts": reproduction}, indent=2))
     return result
 
 
@@ -279,7 +312,7 @@ def make_figures(output, train, train_mask, train_var, train_edge, threshold,
 def markdown_results(output, result, angles, summaries, model):
     s, a = result["static_test"], result["angle_validation"]
     text = ["# Measured analysis: 23 October 2026", "",
-        "Extends the teammate's notebook regression in separate files; notebooks and acquisition datasets are unchanged. Regenerate with `python -m calib.analysis` after editable installation.", "",
+        "Extends the teammate's notebook regression in separate files; notebooks and acquisition datasets are unchanged. Regenerate with `python -m calib analyse` after editable installation. The archived `calibration/fit-static-2026-10-21.json` and `frozen-policy.json` are verified against this reproduction and never silently rewritten.", "",
         "## Static repeat holdout", "",
         f"Mean vector error: {s['raw_vector_mean_error_m_s2']:.6f} -> {s['corrected_vector_mean_error_m_s2']:.6f} m/s². Vector RMSE: {s['raw_vector_rmse_m_s2']:.6f} -> {s['corrected_vector_rmse_m_s2']:.6f} m/s².", "",
         f"Magnitude RMSE: {s['raw_magnitude_rmse_m_s2']:.6f} -> {s['corrected_magnitude_rmse_m_s2']:.6f} m/s². Direction RMSE: {s['raw_direction_rmse_deg']:.6f} -> {s['corrected_direction_rmse_deg']:.6f} degrees. All metrics average six pose means equally; these are nominal-reference, within-session results.", "",
@@ -294,14 +327,15 @@ def markdown_results(output, result, angles, summaries, model):
              f"Included static samples: {sum(r['included_samples'] for r in summaries if r['split']=='training')} training and {sum(r['included_samples'] for r in summaries if r['split']=='testing')} testing.", "",
              "## Limits", "", *["- " + s for s in result["limitations"]], "",
              "Shaking is a limit of gravity-only interpretation, not proof of affine sensor failure. Review all four PNGs; positive and negative changes are retained. No thresholds or coefficients were revised after evaluating held-out errors.", ""]
-    (output / "README.md").write_text("\n".join(text), encoding="utf-8")
+    (output / "README.md").write_text("\n".join(text), encoding="utf-8", newline="\n")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--refreeze", action="store_true", help="deliberately replace the archived fit and policy")
     args = parser.parse_args()
-    run(args.root)
+    run(args.root, args.refreeze)
 
 
 if __name__ == "__main__":

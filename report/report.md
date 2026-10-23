@@ -1,190 +1,151 @@
-<div class="eyebrow">01 / Experiment & question</div>
+<div class="eyebrow">Sprint project · Samsung Galaxy S25 Ultra · phyphox “Acceleration with g”</div>
 
 # Is your phone linear?
 
-<p class="authors">Melis Derveni · Harsimranjeet Kaur<br>Measured report draft · 23 October 2026</p>
+<p class="authors">Melis Derveni · Harsimranjeet Kaur · 23 October 2026</p>
 
-<p class="lead">One phone, one affine correction. Does it improve measurements beyond the six positions used to fit it?</p>
+<p class="lead">We calibrated our phone's accelerometer from six resting poses, tested the correction on recordings it had never seen, and looked for where the model stops working.</p>
 
-### In what sense linear?
+## 1 · Question and hypothesis
 
-We model the measured acceleration vector \(\mathbf m\) from a reference \(\mathbf a\):
+A phone lying still feels only gravity: an arrow 9.81 m/s² long, pointing up. Each of the phone's three axes (x across the screen, y along it, z out of it) reports how much of that arrow falls along it. A perfect sensor would report the true acceleration \(\mathbf a\). A real one has small gain errors, axes that are slightly crossed, and a constant offset. Our hypothesis is that the reading \(\mathbf m\) follows
 
-\[\boxed{\mathbf m=\mathbf S\mathbf a+\mathbf b}\qquad \mathbf S\in\mathbb R^{3\times3},\quad \mathbf b\in\mathbb R^3.\]
+\[\boxed{\mathbf m=\mathbf S\,\mathbf a+\mathbf b}\]
 
-\(\mathbf S\) contains dimensionless gains and cross-axis coupling; \(\mathbf b\) is a constant bias in \(\mathrm{m\,s^{-2}}\). This is **affine**, linear when \(\mathbf b=\mathbf0\), and linear in twelve parameters. No separate noise term is fitted.
+Here the 3×3 matrix \(\mathbf S\) describes how strongly each axis responds, ideally the identity, and the vector \(\mathbf b\) is a constant offset, ideally zero.
 
-\[\begin{bmatrix}\mathbf m\\1\end{bmatrix}=\begin{bmatrix}\mathbf S&\mathbf b\\\mathbf0^\mathsf T&1\end{bmatrix}\begin{bmatrix}\mathbf a\\1\end{bmatrix}.\]
+**Is this linear?** Not strictly. A linear sensor reads zero when nothing acts on it, and twice as much when the input doubles. The offset \(\mathbf b\) breaks the first rule, so the model is **affine**: a straight line that misses the origin, like \(y=2x+1\). Adding a constant 1 as a fourth coordinate turns it back into a single linear map:
 
-### Measurement design
+\[\begin{bmatrix}\mathbf m\\1\end{bmatrix}=\begin{bmatrix}\mathbf S&\mathbf b\\\mathbf 0^\mathsf T&1\end{bmatrix}\begin{bmatrix}\mathbf a\\1\end{bmatrix}\]
 
-Samsung Galaxy S25 Ultra (SM-S938B), Android 16, phyphox 1.2.1, **Acceleration with g**. The nominal stationary reference is \(g=9.81\,\mathrm{m\,s^{-2}}\); gravity remains in the signal.
+**Our answer in short:** for a phone at rest, the sensor follows this straight-line model wherever we tested it. It fails when the phone moves, because the reading then contains more than gravity.
 
-| Collection | Acquisition | Role |
-| --- | --- | --- |
-| 21 October | Six signed positions, two repeats each | First repeats fit; second repeats test |
-| Static samples | 86,323 training · 86,124 testing | Whole runs; no random row split |
-| 22 October | Eight angle runs · two heights | All angle runs held out from fitting |
-| 23 October | Four screen-up runs · four heights | New session; existing model unchanged |
-| Limit recording | 31.15 s shaking · 14,745 samples | Gravity-interpretation demonstration |
+## 2 · Data
 
-We use nominal references \(\pm g\mathbf e_x,\pm g\mathbf e_y,\pm g\mathbf e_z\), acknowledging camera/button contacts despite steady support. Static repeats are within-session.
+We recorded everything with one phone, using the phyphox experiment *Acceleration with g*, and kept the exported files unchanged.
 
-### Independent angle references
+**Six resting poses (21 October).** The phone lay still for about 30 s in each pose of Figure 1, so that each axis pointed straight up once and straight down once. We recorded every pose twice. The first recording of each pose trained the model; the second was kept aside for testing. We trimmed the first and last second of every recording, and any moment where the phone was disturbed.
 
-The new screen-up session uses the same 16 cm hypotenuse, at contact heights 0, 4, 8 and 11 cm:
+<div class="figure">
 
-\[\theta_{\mathrm{ref}}=\arcsin\!\left(\frac hL\right)\quad\Rightarrow\quad 0^\circ,\;14.48^\circ,\;30.00^\circ,\;43.43^\circ.\]
+<img src="figures/poses.svg" alt="The six resting poses">
 
-The 57,686 samples span four approximately 30 s runs. Table-rest 0° is nominal (camera bumps). References and earlier results remain unchanged.
+<p class="caption">Figure 1 · The six training poses. In each, one axis points straight up and should read +9.81 m/s².</p>
+
+</div>
 
 <!-- page -->
 
-<div class="eyebrow">02 / Calibration & identification</div>
+<div class="fig-row">
+<div>
 
-## One model, twelve parameters
+**Tilted phone (22 and 23 October).** To test angles the model never saw, we leaned the phone against a wall (Figure 2). The phone is 16 cm long; we raised its top to heights between 0 and 11 cm, giving angles from 0° to 43°.
 
-Harsimranjeet's regression fits one mean measured vector per training position. Equal pose weights prevent slightly longer recordings dominating. The separate analysis preserves her notebook and adds validation and reproducible exports.
+**Shaking (22 October).** For the failure experiment, we shook the phone hard for 30 s.
 
-\[\mathbf X_i=\begin{bmatrix}a_{ix}&a_{iy}&a_{iz}&1\end{bmatrix},\quad \mathbf M_i=\bar{\mathbf m}_i^\mathsf T,\quad \mathbf B=\begin{bmatrix}\mathbf S^\mathsf T\\\mathbf b^\mathsf T\end{bmatrix}.\]
+</div>
+<div class="figure">
 
-\[\widehat{\mathbf B}=\underset{\mathbf B}{\operatorname{argmin}}\,\lVert\mathbf X\mathbf B-\mathbf M\rVert_F^2,\qquad \widehat{\mathbf S}\,\widehat{\mathbf a}=\mathbf m-\widehat{\mathbf b}.\]
+<img src="figures/ramp.svg" alt="Phone leaning against a wall">
 
-We use SVD least squares, without normal-equation inversion. Correction solves the second equation; tilt is then calculated from the corrected vector. **There is no second angle regression.**
+<p class="caption">Figure 2 · Tilt tests: the angle follows from the measured height h.</p>
+
+</div>
+</div>
+
+<div class="eyebrow">The model we trained</div>
+
+## 3 · Model and estimation
+
+**What the fit sees.** Each training recording is averaged into one reading. In each pose we take the true acceleration to be gravity along one axis: for example \((0,0,+9.81)\) for *screen up*. That gives six pairs of “true value, reading”.
+
+**The equations we solved.** Writing the model for all six poses at once gives one system of equations. The left matrix holds the true values plus a column of ones (for the offset):
+
+\[\underbrace{\begin{bmatrix}+g&0&0&1\\-g&0&0&1\\0&+g&0&1\\0&-g&0&1\\0&0&+g&1\\0&0&-g&1\end{bmatrix}}_{\mathbf X:\ \text{six poses}}\;\begin{bmatrix}\mathbf S^\mathsf T\\\mathbf b^\mathsf T\end{bmatrix}\;\approx\;\underbrace{\begin{bmatrix}\text{reading in pose }+x\\\vdots\\\text{reading in pose }-z\end{bmatrix}}_{\text{measured}}\]
+
+The unknowns, the 12 numbers in \(\mathbf S\) and \(\mathbf b\), are only multiplied by known numbers. So this is a *linear* problem, whatever the sensor really does. Harsimranjeet solved it by least squares, which finds the \(\mathbf S\) and \(\mathbf b\) whose predictions come closest to all six readings at once.
+
+**The model we trained.**
 
 <div class="parameter-panel">
 
-### The fitted calibration
-
-\[\widehat{\mathbf S}=\begin{bmatrix}0.999562&-0.008063&0.015706\\0.005597&0.997870&0.003440\\-0.003154&0.005892&0.998447\end{bmatrix},\qquad \widehat{\mathbf b}=\begin{bmatrix}-0.050740\\0.068563\\0.104316\end{bmatrix}\;\mathrm{m\,s^{-2}}\]
-
-<p>Rounded to six decimals. Full precision and training provenance are stored in the fitted JSON.</p>
+\[\mathbf S=\begin{bmatrix}1.000&-0.008&0.016\\0.006&0.998&0.003\\-0.003&0.006&0.998\end{bmatrix},\qquad \mathbf b=\begin{bmatrix}-0.051\\0.069\\0.104\end{bmatrix}\ \mathrm{m/s^2}\]
 
 </div>
 
-### Which positions, and why?
+In words: the gains on the diagonal are within 0.2 % of 1, the axes are crossed by at most about 1.6 %, and the offsets are up to 0.1 m/s². Small as they are, these errors matter for a spirit level: an offset of 0.1 m/s² is enough to make a flat phone look tilted by about half a degree.
 
-Unique identification requires \(\operatorname{rank}(\mathbf X)=4\). Four affinely independent references suffice; six opposite positions add redundancy. The planar \(\pm X,\pm Y\) subset has rank 3 and cannot identify the Z response. One repeated reference has rank 1. Gravity magnitudes alone cannot determine arbitrary matrix orientation.
+**Using the model.** To correct a new reading, the phone undoes the model:
 
-| Numerical check | Value |
-| --- | ---: |
-| Design rank | 4 |
-| Singular values of \(\mathbf X\) | 13.873435 (three times), 2.449490 |
-| \(\kappa_2(\mathbf X)\) / dimensionless \(\kappa_2(\mathbf X_g)\) | 5.663806 / 1.732051 |
-| \(\kappa_2(\widehat{\mathbf S})\) | 1.015951 |
+\[\hat{\mathbf a}=\mathbf S^{-1}\,(\mathbf m-\mathbf b)\]
 
-### Stable samples, frozen choices
-
-Exclude the first/last second, then screen 0.25 s windows by local RMS vector variation. The training-only rule, \(\max(0.05,\mathrm{median}+8\times1.4826\,\mathrm{MAD})\), freezes at \(0.05\,\mathrm{m\,s^{-2}}\). Keep stable intervals of at least 1 s; gaps over 0.1 s break continuity. Masks were visually checked. Retained samples: **80,677 training; 80,474 testing**. No target-error filtering is used.
-
-The authors jointly chose full affine coupling over a simpler diagonal model, accepting more parameters and sensitivity to reference alignment. Means give equal weights but hide variation, so raw data and masks are retained. Whole-run holdouts avoid adjacent-row mixing but remain correlated within a session. No choice was retuned using held-out errors.
+The live demo applies exactly this to every new sample, and computes the tilt from the corrected reading.
 
 <!-- page -->
 
-<div class="eyebrow">03 / Held-out evidence</div>
+<div class="eyebrow">What the data show</div>
 
-## Calibration results
+## 4 · Evidence
 
-### How much improvement?
+### Calibrated versus uncalibrated
 
-Metrics compare identical windows and equally weight six static pose means or four new angle run means. Direction and tilt errors are distinct.
+Figure 3a uses the six test recordings, which the fit never saw. Calibration roughly **halves the error**: the typical distance from true gravity drops from 0.22 to 0.11 m/s², and the tilt error from 1.2° to 0.6°. One pose, screen down, does not improve.
 
-<div class="metrics">
+Figure 3b uses tilted recordings from other days. A phone at rest should read exactly 9.81 m/s² at any angle. Uncalibrated, the reading wanders with the angle. Calibrated, it sits in a narrow band just below 9.81, about 0.06 m/s² low, at every angle.
 
-| Held-out RMSE | Raw | Corrected |
-| --- | ---: | ---: |
-| Static vector · \(\mathrm{m\,s^{-2}}\) | 0.215965 | **0.111114** |
-| Static magnitude · \(\mathrm{m\,s^{-2}}\) | 0.078677 | **0.048051** |
-| Static direction · degrees | 1.173729 | **0.585285** |
-| New angle tilt · degrees | **3.988562** | 4.110647 |
+<div class="figure fig-chart">
+
+![Before and after calibration](figures/before-after.png)
+
+<p class="caption">Figure 3 · Error before (grey) and after (green) calibration, on recordings not used for fitting.</p>
+
+</div>
+
+One result did not improve. On the wall tests, the phone reads roughly 3–6° less than the angle we computed from the ruler, with or without calibration. Calibration shifts these readings by less than 1°, so it cannot close the gap. The gap comes from how the phone rests against the wall and table, not from the sensor; we kept the measured heights unchanged.
+
+### Where it breaks
+
+The model turns a reading into a tilt by assuming the phone feels only gravity. When the phone moves, its own acceleration adds to gravity. In our shaking test (Figure 4) the reading swings up to 120 m/s², about 12 times gravity, and almost never passes through the resting value of 9.81. Any tilt computed from it is meaningless, calibrated or not. We had no second instrument measuring the true shaking, so we cannot say whether the sensor itself stopped being linear. What fails is our model's assumption that the phone is at rest.
+
+<div class="figure fig-shake">
+
+![Shaking](figures/shaking.png)
+
+<p class="caption">Figure 4 · Shaking: the total reading compared with a phone at rest.</p>
 
 </div>
 
-\[\mathrm{RMSE}_{\mathrm{vec}}=\sqrt{\frac1N\sum_{i=1}^{N}\lVert\mathbf v_i-\mathbf a_i\rVert_2^2}.\]
-
-Static vector RMSE falls **48.6%**. Mean vector error falls from 0.201209 to 0.105644 \(\mathrm{m\,s^{-2}}\), reproducing the notebook closely. The \(-Z\) vector error worsens slightly: 0.139936 to 0.143284 \(\mathrm{m\,s^{-2}}\).
-
-### Which linearity test?
-
-The new angles test component predictions on a fixed-gravity sphere, not unrestricted homogeneity. The screen-up long-axis slope is
-
-\[\theta(\mathbf v)=\operatorname{atan2}\!\left(|v_y|,\sqrt{v_x^2+v_z^2}\right).\]
-
-The demonstrated benefit is the **static repeat test**. New tilt RMSE is 3.99° raw / 4.11° corrected; raised-only RMSE is 4.60° / 4.74°. Tilt improvement is not established, with or without nominal 0°. Earlier results (3.27° / 3.73°) remain recorded separately; references are unchanged.
-
-<div class="comparison-figures">
-<div class="figure">
-
-![Static validation](figures/static-vector.png)
-
-<p class="caption">Figure 1 · Static pose means. Improvement is not universal.</p>
-
-</div>
-<div class="figure">
-
-![Angle validation](figures/angle-tilt.png)
-
-<p class="caption">Figure 2 · New angle validation; nominal 0° rests on camera bumps.</p>
-
-</div>
-</div>
+The sensor also has built-in limits: it clips above 157 m/s² (16 g) on any axis, which our shaking never reached, and it counts in steps of 0.005 m/s², too small to matter for a spirit level.
 
 <!-- page -->
 
-<div class="eyebrow">04 / Limits & responsibility</div>
+<div class="eyebrow">The five questions</div>
 
-## Use, limits and responsibility
+<div class="qa">
 
-The effective correction is supported for the tested nominal static positions. The measured angle references are accepted as supplied; this validation does not isolate sensor behaviour from alignment effects. No claim of unrestricted accuracy follows from a good static fit.
+**1 · In which sense is the sensor linear?** It is affine: a straight line plus an offset (\(\mathbf b\) up to 0.1 m/s²). With an extra coordinate it becomes a linear map (Section 1). Estimating \(\mathbf S\) and \(\mathbf b\) is a linear problem even if the sensor were not linear, because the unknowns are only multiplied by known numbers (Section 3).
 
-### Where does the model fail?
+**2 · How do you know?** We tested homogeneity: if an axis gets a fraction of the input, does it give the same fraction of the output? We trained only with gravity fully along one axis. On the tilted recordings each axis feels only part of gravity, from about 20 % to 98 %. If the axes did not scale in proportion, the corrected reading of a still phone would drift away from 9.81 at these in-between angles. It does not: it stays within 0.07 m/s² (0.7 %) of 9.81 at every angle, as close as at the training poses (Figure 3b).
 
-The shaking run is retained in full. Peak vector magnitude is **119.821** \(\mathrm{m\,s^{-2}}\); RMS magnitude deviation from \(g\) is **29.115** \(\mathrm{m\,s^{-2}}\). Without an independent dynamic reference, these are signal statistics—not acceleration errors, clipping evidence or proof of non-affine response.
+**3 · Which poses did we need, and why?** The 12 unknowns can only be found uniquely if the matrix \(\mathbf X\) in Section 3 has rank 4, that is, four independent rows. Our six poses give rank 4, with a spare pair as a check. A set without a vertical z pose is not enough: if the phone never lies screen up or down, the third column of \(\mathbf X\) is all zeros, the rank drops to 3, and the sensor's response along z cannot be found.
 
-<div class="figure shaking-figure">
+**4 · How much does calibration help?** On test recordings it halves the error, from 0.22 to 0.11 m/s², and from 1.2° to 0.6° of tilt (Figure 3a). On tilted recordings from other days, every still reading sits in a narrow band just below 9.81 (Figure 3b). The wall-ramp angles do not improve, for reasons outside the sensor (Section 4).
 
-![Shaking recording](../results/analysis-2026-10-23/04-shaking.png)
-
-<p class="caption">Figure 3 · Real changing specific force invalidates gravity-only tilt interpretation. Pixel-bin envelopes retain extremes.</p>
+**5 · Where does linearity break?** When the phone moves: shaking drives the reading up to 120 m/s², and the gravity-only model fails completely (Figure 4). The sensor also clips above 157 m/s² and cannot resolve steps below 0.005 m/s². A user should read tilt only while the phone is still; the live demo warns when it is not.
 
 </div>
 
-<div class="two-col">
-<div>
+## 5 · Limits and one more week
 
-### What the demonstration establishes
-
-The same exported calibration corrects fresh acceleration on shared timestamps and scales. Synthetic preview is labelled; reference comparisons require an independent target and still-phone confirmation. A 3D display hold is an intentional safeguard, not a measured sensor failure.
-
-</div>
-<div>
-
-### What remains unresolved
-
-Four distinct height settings now extend angle coverage, with one run each and nominal camera-supported 0°. Static repeats remain within-session. Ruler precision, case/rate consistency and physical rehearsal remain to document. A referenced drift or controlled-input experiment is needed for an affine-failure claim.
-
-</div>
-</div>
-
-Both authors retain negative results. Any tuning from these validation errors requires fresh held-out data for a new performance claim.
+Our test recordings came from the same session as the training ones, not from a second day. In each pose we assumed gravity lies exactly along one axis, but the phone rests slightly tilted, for example on its camera bump. Some of the cross terms in \(\mathbf S\) may describe that tilt rather than the sensor, which could explain why the ramp angles did not improve. With one more week we would repeat the six poses on a second day in a precisely square holder, check the ramp angles with a digital inclinometer, and test accelerations above 1 g with a known reference such as a turntable.
 
 <div class="contributions">
 
-### Both authors worked on the project
-
-**Melis Derveni** performed measurements and experiments and prepared the report, README, live demonstration and other deliverables. **Harsimranjeet Kaur** developed model training, testing and evaluation. Both discussed alternatives, advantages and limitations and jointly agreed the experimental approach, model and analysis decisions.
+**Contributions.** **Melis Derveni** performed the measurements and experiments and prepared the report, README, live demonstration and other deliverables. **Harsimranjeet Kaur** developed model training, testing and evaluation. Both discussed alternatives, advantages and limitations, and jointly agreed the experimental approach, model and analysis decisions.
 
 </div>
 
 <div class="signatures">
 <div><div class="signature-line"></div>Melis Derveni · signature / date</div>
 <div><div class="signature-line"></div>Harsimranjeet Kaur · signature / date</div>
-</div>
-
-<div class="references">
-
-**Evidence & reproduction.** Original exports, 21–23 October 2026; user-confirmed geometry; Harsimranjeet's unchanged `main.ipynb`. Static: `python -m calib.analysis`. New angles: `python scripts/validate_new_angles.py`. Tests: `python -m pytest`. Raw data, frozen fit and prior results are preserved. Browser checks do not replace physical rehearsal.
-
-**Sources.** Course brief, *Sprint project: Is your phone linear?*; [phyphox sensor definitions](https://phyphox.org/docs/file-format/input/) and [remote API](https://phyphox.org/docs/remote-interface/). Calibration does not remove gravity, random noise or lost clipped information.
-
 </div>

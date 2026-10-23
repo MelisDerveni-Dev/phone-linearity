@@ -16,6 +16,20 @@ Review verification: 19 Python tests plus 8 subtests, 31 Node tests and syntax c
 3. Read the files involved in the current request before editing them. This handoff is a dated snapshot; verify the current implementation.
 4. Stay within the user's current request. The course brief describes the eventual submission; it does not authorize implementing every future milestone immediately.
 
+## Update: five-question evidence, model comparison and defect fixes, 23 October 2026
+
+At the user's request, aimed at a 90/100 grade without changing data or being dishonest:
+
+- `python -m calib evidence` (`src/calib/evidence.py`) fits raw, bias-only, six-position (diagonal) and full models on the static **training** pose means only. It reports training leave-one-face-out results and every held-out metric. It also runs a reference-free linearity test (a still phone must read 9.81 m/s² at any angle; the delivered full model stays within 0.07 m/s²), repeatability, quantization (every sample is a multiple of 0.0047856 m/s²), and full-scale and shaking statistics. Outputs, including the three report figures, are in `results/evidence-2026-10-23/`.
+- Calibration: the team keeps Harsimranjeet's original full affine fit, `calibration/fit-static-2026-10-21.json`, unchanged. Bias-only and diagonal-S variants appear only as comparisons in `results/evidence-2026-10-23/`, added after the held-out results were known; they are not delivered and must not be presented as blind tests.
+- Ramp tilt is explained, not tuned. Calibration moves any ramp by less than 1°, while raised ramps read 2.6–6.0° below asin(h/L). h and L stay exactly as measured; the geometric cause is not isolated.
+- `python -m calib {fit,apply,analyse,evidence}` CLI. `analyse` verifies the archived fit/policy semantically and never rewrites them (use `--refreeze` to replace deliberately). All JSON is written with LF. `fitted` is explicit in `AffineCalibration`.
+- Viewer fixes: a failed connect broadcasts the cleared stream (`scripts/live.mjs`); the motion guard restarts quiet time after gaps over 0.25 s (`web/orientation.mjs`). The viewer UI is otherwise unchanged.
+- Report rebuilt as `report/report.pdf` (four pages): plain language, the brief's required sections, one model, a pose diagram, a ramp sketch and two charts, with the five questions answered at the end. `report/figures.py` draws the charts from result tables. `report-draft.pdf` was removed. The README was rewritten, and the viewer manual moved to `docs/live-viewer.md`. `results/applied/` is ignored.
+- Verification: 26 Python tests (+8 subtests) and 33 Node tests pass; `npm run check` passes; the four-page build passes and all pages were inspected. Physical demo rehearsal and signatures remain outstanding. Nothing was committed or pushed.
+
+Statements below this section are dated history; where they conflict, this section wins.
+
 ## Update: new four-height validation and independent visual review, 23 October 2026
 
 The new original export `data/raw/Acceleration with g 2026-10-23 11-40-57/` has four runs, 57,686 samples, user-confirmed 0/4/8/11 cm heights, 16 cm hypotenuse, screen-up throughout. The zero-height recording rests on rear-camera bumps: nominal zero, not an independently levelled body. `python scripts/validate_new_angles.py` evaluates the existing frozen calibration and policy by hash; it never fits or tunes. All rows/strings survive in an ignored reproducible per-sample CSV, with compact protocol/audit in `data/splits/angles-2026-10-23/` and results/plots in `results/angle-validation-2026-10-23/`. New tilt RMSE is 3.988562 -> 4.110647 degrees; raised-only sensitivity is 4.604338 -> 4.740403. Static improvement remains unchanged. One acquisition per height; earlier angle results remain separate. The report emphasises the static benefit while retaining the angle figures and concise limitation honestly.
@@ -80,7 +94,7 @@ Static collection and splitting were authorized on **21 October 2026**. Fitting 
 | --- | --- |
 | `report/report.md` | Scientific report source. Replace pending results only with actual measured evidence. |
 | `report/build_report.py` | KaTeX/Markdown to self-contained HTML and browser-printed PDF; see report/README.md. |
-| `report/report-draft.pdf` | Generated draft. Rebuild when report content changes; do not edit the PDF directly. |
+| `report/report.pdf` | Generated four-page report. Rebuild when report content changes; do not edit the PDF directly. |
 | `scripts/live.mjs` | Local HTTP server, phone polling, buffer discovery, matrix validation/application and shared stream state. |
 | `scripts/start-live.ps1` | Windows convenience launcher. |
 | `web/index.html` | Dashboard structure and element IDs used by `app.js`. |
@@ -101,10 +115,10 @@ Static collection and splitting were authorized on **21 October 2026**. Fitting 
 | `data/splits/` | Shared compact audit, interval table and manifest with source/output hashes. |
 | `data/README.md` | Collection protocol, device/settings and actual export headers/units. |
 | `data/processed/` | Derived masks/tables generally ignored. Static-2026-10-21 training/testing and angles-2026-10-22 training/testing/limit CSVs are explicitly versioned at the user's request; preserve their bytes. |
-| `src/calib/` | Implemented affine fit/apply/JSON class, validated CSV reader, stability policy and analysis CLI. |
+| `src/calib/` | `AffineCalibration` (full or diagonal fit, apply, JSON), readers, stability policy, `analyse`, `evidence` and the `python -m calib` CLI. |
 | `calibration/identity.json` | Explicit uncalibrated reference; never relabel it as a measured fit. |
-| `calibration/params.json` | Intended future fitted artifact; currently ignored by Git. |
-| `results/figures/`, `results/metrics/` | Future derived evidence; currently ignored except for placeholders. |
+| `calibration/fit-static-2026-10-21.json` | The delivered fitted model (full affine, hash-checked by the four-height validation). Verified, never silently rewritten. `calibration/params.json` is the ignored default output of `python -m calib fit`. |
+| `results/analysis-2026-10-23/`, `results/angle-validation-2026-10-23/`, `results/evidence-2026-10-23/` | Versioned compact metrics, tables and figures. `results/figures/` and `results/metrics/` are unused placeholders; `results/applied/` is ignored. |
 | `decisions.md` | For each result-changing choice: decision, alternatives, evidence. |
 
 Do not silently change artifact ignore rules. When reproducible results exist, decide deliberately which derived outputs belong in version control and document that choice.

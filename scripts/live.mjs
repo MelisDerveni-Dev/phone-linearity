@@ -172,11 +172,18 @@ export function createObservatory({pollMs=50, defaultBuffers}={}) {
   };
   const connect=async({url,buffers})=>{
     stop();reset();attitudeBuffers=null;state.attitudeAvailable=false;state.source='none';state.connected=false;state.measuring=false;state.error=null;state.session=null;state.latencyMs=null;
-    state.phoneUrl=normalizePhoneUrl(url);
     const token=generation;
-    const config=await phoneRequest(state.phoneUrl,'/config');
-    if(token!==generation)return snapshot();
-    state.buffers=discoverBuffers(config,buffers||defaultBuffers);attitudeBuffers=discoverAttitudeBuffers(config);state.attitudeAvailable=Boolean(attitudeBuffers);state.connected=true;state.source='phone';touch();
+    try {
+      state.phoneUrl=normalizePhoneUrl(url);
+      const config=await phoneRequest(state.phoneUrl,'/config');
+      if(token!==generation)return snapshot();
+      state.buffers=discoverBuffers(config,buffers||defaultBuffers);attitudeBuffers=discoverAttitudeBuffers(config);state.attitudeAvailable=Boolean(attitudeBuffers);
+    } catch(error) {
+      // The previous stream was already stopped and cleared: tell every window, then report the failure.
+      if(token===generation){state.error=`Connection failed: ${error.message}`;touch();}
+      throw error;
+    }
+    state.connected=true;state.source='phone';touch();
     await poll(token);return snapshot();
   };
   const disconnect=()=>{stop();attitudeBuffers=null;state.attitudeAvailable=false;state.connected=false;state.measuring=false;state.source='none';state.error=null;reset();touch();return snapshot();};

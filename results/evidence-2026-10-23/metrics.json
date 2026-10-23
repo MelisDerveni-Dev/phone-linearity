@@ -1,0 +1,566 @@
+{
+  "schema_version": 1,
+  "frozen_threshold_m_s2": 0.05,
+  "models": {
+    "raw": {
+      "S": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "b": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "bias": {
+      "S": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "b": [
+        -0.05074012467767139,
+        0.06856265722531663,
+        0.10431595915664345
+      ]
+    },
+    "six-position": {
+      "S": [
+        [
+          0.9995617676140324,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.9978696357353588,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.9984467069877508
+        ]
+      ],
+      "b": [
+        -0.11327410499040517,
+        0.03222468194993805,
+        0.06363404472711444
+      ]
+    },
+    "full": {
+      "S": [
+        [
+          0.9995617676140324,
+          -0.00806341675930164,
+          0.015705674678177243
+        ],
+        [
+          0.00559739515603771,
+          0.9978696357353594,
+          0.0034396663436530093
+        ],
+        [
+          -0.0031543423765676933,
+          0.0058916569615257985,
+          0.9984467069877514
+        ]
+      ],
+      "b": [
+        -0.05074012467767164,
+        0.06856265722531751,
+        0.10431595915664345
+      ]
+    }
+  },
+  "comparison": [
+    {
+      "model": "raw",
+      "parameters": 0,
+      "train_fit_vector_rmse_m_s2": 0.20443797769544073,
+      "train_magnitude_rmse_m_s2": 0.07909052690623304,
+      "loo_folds_identifiable": 6,
+      "loo_vector_rmse_m_s2": 0.20443797769544073,
+      "loo_direction_rmse_deg": 1.1001931161727598,
+      "static_test_vector_rmse_m_s2": 0.21596504463723054,
+      "static_test_magnitude_rmse_m_s2": 0.07867703996527722,
+      "static_test_tilt_rmse_deg": 1.1737285725615112,
+      "ramp_magnitude_rmse_m_s2": 0.08166384596480102,
+      "ramp_magnitude_max_abs_m_s2": 0.10157258568186123,
+      "ramp_tilt_rmse_2026_10_22_deg": 3.267286686789533,
+      "ramp_tilt_rmse_2026_10_23_deg": 3.9885619177831426,
+      "ramp_tilt_rmse_2026_10_23_raised_deg": 4.604337522729063,
+      "max_tilt_change_vs_raw_deg": 0.0
+    },
+    {
+      "model": "bias",
+      "parameters": 3,
+      "train_fit_vector_rmse_m_s2": 0.15374546878308018,
+      "train_magnitude_rmse_m_s2": 0.04917888601130677,
+      "loo_folds_identifiable": 6,
+      "loo_vector_rmse_m_s2": 0.1844945625396964,
+      "loo_direction_rmse_deg": 1.0243993182408602,
+      "static_test_vector_rmse_m_s2": 0.16252447899214845,
+      "static_test_magnitude_rmse_m_s2": 0.049108528506989955,
+      "static_test_tilt_rmse_deg": 0.9071132852770741,
+      "ramp_magnitude_rmse_m_s2": 0.0552564071771112,
+      "ramp_magnitude_max_abs_m_s2": 0.07696922027331965,
+      "ramp_tilt_rmse_2026_10_22_deg": 3.5396876257241763,
+      "ramp_tilt_rmse_2026_10_23_deg": 4.0538125048470715,
+      "ramp_tilt_rmse_2026_10_23_raised_deg": 4.679302632040677,
+      "max_tilt_change_vs_raw_deg": 0.4700318978249527
+    },
+    {
+      "model": "six-position",
+      "parameters": 6,
+      "train_fit_vector_rmse_m_s2": 0.17419797187325808,
+      "train_magnitude_rmse_m_s2": 0.0028140764960598434,
+      "loo_folds_identifiable": 0,
+      "loo_vector_rmse_m_s2": null,
+      "loo_direction_rmse_deg": null,
+      "static_test_vector_rmse_m_s2": 0.18374062771499228,
+      "static_test_magnitude_rmse_m_s2": 0.0031287046680308394,
+      "static_test_tilt_rmse_deg": 1.0727594589107046,
+      "ramp_magnitude_rmse_m_s2": 0.02276573862373578,
+      "ramp_magnitude_max_abs_m_s2": 0.038483771663058164,
+      "ramp_tilt_rmse_2026_10_22_deg": 3.456914140129967,
+      "ramp_tilt_rmse_2026_10_23_deg": 3.9759278874955837,
+      "ramp_tilt_rmse_2026_10_23_raised_deg": 4.59100603951967,
+      "max_tilt_change_vs_raw_deg": 0.4711087088653727
+    },
+    {
+      "model": "full",
+      "parameters": 12,
+      "train_fit_vector_rmse_m_s2": 0.10350263903084642,
+      "train_magnitude_rmse_m_s2": 0.0478886884731416,
+      "loo_folds_identifiable": 6,
+      "loo_vector_rmse_m_s2": 0.3105282426859394,
+      "loo_direction_rmse_deg": 1.6070863247443221,
+      "static_test_vector_rmse_m_s2": 0.11111356618574902,
+      "static_test_magnitude_rmse_m_s2": 0.04805083819060016,
+      "static_test_tilt_rmse_deg": 0.5852847594708395,
+      "ramp_magnitude_rmse_m_s2": 0.058060940123270524,
+      "ramp_magnitude_max_abs_m_s2": 0.06620271246606357,
+      "ramp_tilt_rmse_2026_10_22_deg": 3.726341755815447,
+      "ramp_tilt_rmse_2026_10_23_deg": 4.1106468787726005,
+      "ramp_tilt_rmse_2026_10_23_raised_deg": 4.74040259920503,
+      "max_tilt_change_vs_raw_deg": 0.7716549436904323
+    }
+  ],
+  "leave_one_face_out": {
+    "raw": [
+      {
+        "pose": "+X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.172865475256601,
+        "magnitude_error_m_s2": -0.11674476859370131,
+        "direction_error_deg": 0.7490743441765374
+      },
+      {
+        "pose": "-X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.16823834226081463,
+        "magnitude_error_m_s2": 0.10980314967389049,
+        "direction_error_deg": 0.7403407727997132
+      },
+      {
+        "pose": "+Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.2850943423014763,
+        "magnitude_error_m_s2": 0.015456281875833255,
+        "direction_error_deg": 1.6614083723879844
+      },
+      {
+        "pose": "-Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.11356776412687665,
+        "magnitude_error_m_s2": -0.05260723961701963,
+        "direction_error_deg": 0.589427435334296
+      },
+      {
+        "pose": "+Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.2799277140725774,
+        "magnitude_error_m_s2": 0.05225094789925322,
+        "direction_error_deg": 1.6019887928066827
+      },
+      {
+        "pose": "-Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.14158658776827587,
+        "magnitude_error_m_s2": -0.07816147477889324,
+        "direction_error_deg": 0.6922874768667344
+      }
+    ],
+    "bias": [
+      {
+        "pose": "+X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.10371693879374619,
+        "magnitude_error_m_s2": -0.07997738393256881,
+        "direction_error_deg": 0.387272075734719
+      },
+      {
+        "pose": "-X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.1132831641739893,
+        "magnitude_error_m_s2": 0.0702842087686033,
+        "direction_error_deg": 0.5170488572688314
+      },
+      {
+        "pose": "+Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.22304256686638219,
+        "magnitude_error_m_s2": -0.06637317932533549,
+        "direction_error_deg": 1.2479280392457752
+      },
+      {
+        "pose": "-Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.029535721422322525,
+        "magnitude_error_m_s2": 0.018553839326681754,
+        "direction_error_deg": 0.13409334076141782
+      },
+      {
+        "pose": "+Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.3569656110671356,
+        "magnitude_error_m_s2": -0.06079743844753693,
+        "direction_error_deg": 2.06092031324385
+      },
+      {
+        "pose": "-Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.05093515488787495,
+        "magnitude_error_m_s2": 0.03061738486756127,
+        "direction_error_deg": 0.23737448286128082
+      }
+    ],
+    "six-position": [
+      {
+        "pose": "+X",
+        "identifiable": false,
+        "reason": "Axis x needs references along both +x and -x (rank 2)"
+      },
+      {
+        "pose": "-X",
+        "identifiable": false,
+        "reason": "Axis x needs references along both +x and -x (rank 2)"
+      },
+      {
+        "pose": "+Y",
+        "identifiable": false,
+        "reason": "Axis y needs references along both +y and -y (rank 2)"
+      },
+      {
+        "pose": "-Y",
+        "identifiable": false,
+        "reason": "Axis y needs references along both +y and -y (rank 2)"
+      },
+      {
+        "pose": "+Z",
+        "identifiable": false,
+        "reason": "Axis z needs references along both +z and -z (rank 2)"
+      },
+      {
+        "pose": "-Z",
+        "identifiable": false,
+        "reason": "Axis z needs references along both +z and -z (rank 2)"
+      }
+    ],
+    "full": [
+      {
+        "pose": "+X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.19247925776317493,
+        "magnitude_error_m_s2": -0.18580218883751876,
+        "direction_error_deg": 0.29635127001012573
+      },
+      {
+        "pose": "-X",
+        "identifiable": true,
+        "vector_error_m_s2": 0.19619783524201423,
+        "magnitude_error_m_s2": 0.18965172982895773,
+        "direction_error_deg": 0.29073456145648274
+      },
+      {
+        "pose": "+Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.26141886770923317,
+        "magnitude_error_m_s2": -0.10514931755628965,
+        "direction_error_deg": 1.4054621493649606
+      },
+      {
+        "pose": "-Y",
+        "identifiable": true,
+        "vector_error_m_s2": 0.264330789661533,
+        "magnitude_error_m_s2": 0.11219238899902528,
+        "direction_error_deg": 1.389985399284697
+      },
+      {
+        "pose": "+Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.42442874633253164,
+        "magnitude_error_m_s2": -0.1126586404951162,
+        "direction_error_deg": 2.403993867642077
+      },
+      {
+        "pose": "-Z",
+        "identifiable": true,
+        "vector_error_m_s2": 0.42973774600344233,
+        "magnitude_error_m_s2": 0.1312437789159393,
+        "direction_error_deg": 2.3743290192044664
+      }
+    ]
+  },
+  "homogeneity": {
+    "test": "Six-position model pinned only at a_j = +/-g on each axis; it predicts every intermediate input k*g by proportional scaling. Check |a_hat| = g at held-out still orientations (no angle reference needed).",
+    "orientations": 18,
+    "intermediate_orientations": 11,
+    "intermediate_input_fraction_range": [
+      0.19138706705538205,
+      0.9814172923770269
+    ],
+    "angle_from_nearest_face_range_deg": [
+      0.37406960725008026,
+      37.559376954279145
+    ],
+    "faces_rmse_m_s2": 0.003102285322137041,
+    "intermediate_rmse_m_s2": 0.023761523135427426,
+    "max_abs_m_s2": 0.038483771663058164,
+    "max_abs_fraction_of_g": 0.003922912503879527,
+    "raw_intermediate_rmse_m_s2": 0.08410269218763682,
+    "full_intermediate_rmse_m_s2": 0.0592133146034461,
+    "full_intermediate_mean_m_s2": -0.058758002884735046,
+    "caveat": "Bounds any departure from proportional scaling (and unmodelled cross-axis coupling) within |a_j| <= g on the gravity sphere; inputs above 1 g are untested."
+  },
+  "repeatability": {
+    "static_repeat_difference_m_s2": {
+      "+X": 0.0009347780485918854,
+      "-X": 0.0005975341274188792,
+      "+Y": 0.05867762021207664,
+      "-Y": 0.0008702583681568155,
+      "+Z": 0.001660825010779029,
+      "-Z": 0.002180728770246016
+    },
+    "static_repeat_difference_rms_m_s2": 0.02398807077868574,
+    "ramp_repeat_tilt_difference_deg": {
+      "1": 0.0006259310552323427,
+      "2": 0.003020802948462631,
+      "3": 0.0016561798539829198,
+      "4": 0.0002651088652356748
+    },
+    "screen_up_raw_magnitude_across_days_m_s2": {
+      "2026-10-21 static +Z training": 9.862250947899254,
+      "2026-10-23 0 cm run": 9.857137179464418
+    },
+    "per_sample_noise_std_m_s2": {
+      "x": 0.007835455710193168,
+      "y": 0.008177478469092551,
+      "z": 0.010256542372153211
+    },
+    "raised_ramp_raw_gap_to_contact_line_deg": [
+      -5.971834784889637,
+      -2.553790675990122
+    ],
+    "geometry_sensitivity_deg_per_mm": {
+      "height": 0.4931235552491999,
+      "length_at_largest_angle": 0.3390224442338249
+    }
+  },
+  "limits": {
+    "device": {
+      "Name": "lsm6dsv_0 Accelerometer Non-wakeup",
+      "Vendor": "STMicro",
+      "Range": "156.9064",
+      "Resolution": "0.0047856453"
+    },
+    "quantization": {
+      "rows": [
+        {
+          "export": "Acceleration with g 2026-10-21 17-43-29",
+          "axis": "x",
+          "median_level_spacing_in_steps": 0.9999993208857323,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 19,
+          "first_run_samples": 13888
+        },
+        {
+          "export": "Acceleration with g 2026-10-21 17-43-29",
+          "axis": "y",
+          "median_level_spacing_in_steps": 0.9999775787813076,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 18,
+          "first_run_samples": 13888
+        },
+        {
+          "export": "Acceleration with g 2026-10-21 17-43-29",
+          "axis": "z",
+          "median_level_spacing_in_steps": 0.9999993104378225,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 16,
+          "first_run_samples": 13888
+        },
+        {
+          "export": "Acceleration with g 2026-10-22 10-55-51",
+          "axis": "x",
+          "median_level_spacing_in_steps": 1.000000094031207,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 14,
+          "first_run_samples": 14705
+        },
+        {
+          "export": "Acceleration with g 2026-10-22 10-55-51",
+          "axis": "y",
+          "median_level_spacing_in_steps": 0.9999775787813076,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 16,
+          "first_run_samples": 14705
+        },
+        {
+          "export": "Acceleration with g 2026-10-22 10-55-51",
+          "axis": "z",
+          "median_level_spacing_in_steps": 0.9999775787813076,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 20,
+          "first_run_samples": 14705
+        },
+        {
+          "export": "Acceleration with g 2026-10-23 11-40-57",
+          "axis": "x",
+          "median_level_spacing_in_steps": 1.0000024239155354,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 15,
+          "first_run_samples": 14404
+        },
+        {
+          "export": "Acceleration with g 2026-10-23 11-40-57",
+          "axis": "y",
+          "median_level_spacing_in_steps": 1.0000000940312057,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 14,
+          "first_run_samples": 14404
+        },
+        {
+          "export": "Acceleration with g 2026-10-23 11-40-57",
+          "axis": "z",
+          "median_level_spacing_in_steps": 0.9999775787813076,
+          "fraction_on_lattice": 1.0,
+          "distinct_levels_first_run": 50,
+          "first_run_samples": 14404
+        }
+      ],
+      "minimum_fraction_on_lattice": 1.0,
+      "step_m_s2": 0.0047856453,
+      "step_as_tilt_deg": 0.02795079285796317,
+      "averaging_note": "Noise (about 1.7 steps rms) dithers the staircase, so means of many samples stay linear."
+    },
+    "shaking": {
+      "samples": 14745,
+      "duration_s": 31.139187300000003,
+      "reported_full_scale_m_s2": 156.9064,
+      "peak_abs_axis_m_s2": {
+        "x": 80.53762817,
+        "y": 52.99145126,
+        "z": 94.3346405
+      },
+      "peak_fraction_of_full_scale": 0.6012160147705894,
+      "samples_at_or_beyond_full_scale": 0,
+      "max_vector_magnitude_m_s2": 119.82106794295841,
+      "rms_magnitude_deviation_from_g_m_s2": 29.11464024489946,
+      "fraction_within_still_flag_0_35": 0.006307222787385555,
+      "fraction_above_2g": 0.8229908443540183,
+      "one_second_mean_magnitude_range_m_s2": [
+        3.8831677911704046,
+        26.03430178907782
+      ],
+      "one_second_mean_tilt_range_deg": [
+        1.7053570296812663,
+        66.75132073411007
+      ],
+      "interpretation": "The input is no longer gravity alone, so the gravity-only calibration model a = g fails. No independent dynamic reference exists: this does not show that the sensor's m = S a + b response fails."
+    }
+  },
+  "diagnostics": {
+    "full": {
+      "rank": 4,
+      "singular_values": [
+        13.873435046880065,
+        13.873435046880063,
+        13.873435046880063,
+        2.449489742783178
+      ],
+      "design_condition": 5.66380614075023,
+      "dimensionless_design_condition": 1.732050807568877,
+      "S_condition": 1.0159506349186154
+    },
+    "six-position": {
+      "structure": "diagonal",
+      "parameters": 6,
+      "per_axis": [
+        {
+          "axis": "x",
+          "rows": 2,
+          "rank": 2,
+          "condition": 1.0000000000000004
+        },
+        {
+          "axis": "y",
+          "rows": 2,
+          "rank": 2,
+          "condition": 1.0000000000000004
+        },
+        {
+          "axis": "z",
+          "rows": 2,
+          "rank": 2,
+          "condition": 1.0000000000000004
+        }
+      ],
+      "S_condition": 1.0016957444320136
+    },
+    "rank_examples": {
+      "all six faces": 4,
+      "four faces +X,+Y,+Z,-X": 4,
+      "planar +/-X, +/-Y": 3,
+      "three faces +X,+Y,+Z": 3,
+      "one pose repeated": 1
+    }
+  },
+  "input_sha256": {
+    "calibration/fit-static-2026-10-21.json": "1da01517e2f28876eda4bdaf0abcf3232eb06352c5ae681256819e5674bb7132",
+    "results/analysis-2026-10-23/frozen-policy.json": "6d0e9483906dfd941c4477029e7cf067a7d7c6257ae05968cc496fafc8a6d1b7",
+    "data/processed/static-2026-10-21/training.csv": "c4a7e2bd8fb64e4fc407f06ad3846e03120c23ee1b30ca219960515afb66cb6a",
+    "data/processed/static-2026-10-21/testing.csv": "73bc13f77d24333bfa0a1708e05922d41eddda303650ddc12ee7e8427f4ffb17",
+    "data/processed/angles-2026-10-22/training.csv": "01c2242064ab8424ad66cfa0bcfa2ec4cab6d9a2853ca2cea2dcd7cdbd5dc039",
+    "data/processed/angles-2026-10-22/testing.csv": "857f99b2218a619e1f83f8b19b35f84e0930104178f1e6a8bdbf6519e7a46be3",
+    "data/processed/angles-2026-10-22/limit.csv": "9aa86e36689d02e84ec68744f3b9a6456c86f9c770c651b65bf08c34c27f4a7b",
+    "data/raw/Acceleration with g 2026-10-23 11-40-57/Raw Data.csv": "09026101bbadbe0280d9f36fcd4f8e4d5c9fcf75a0a1634382708c235c7d8b38"
+  }
+}

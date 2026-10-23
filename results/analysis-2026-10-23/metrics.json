@@ -41,6 +41,8 @@
     "corrected_direction_mean_error_deg": 0.4991210953251421
   },
   "diagnostics": {
+    "structure": "full",
+    "parameters": 12,
     "rank": 4,
     "singular_values": [
       13.873435046880065,
@@ -69,6 +71,10 @@
   "notebook_sha256_unchanged": {
     "main.ipynb": "15a8a3debec1300d42b86ad10939a77578ee9df173a462423eab4421f4d40371"
   },
+  "frozen_artifacts": {
+    "calibration": "verified",
+    "policy": "verified"
+  },
   "versions": {
     "python": "3.14.7",
     "numpy": "2.5.4",
@@ -79,7 +85,7 @@
     "Nominal +/-g references include support alignment error; fit is not intrinsic sensor identification.",
     "Ruler resolution, contact uncertainty, case and user-selected rate remain unconfirmed.",
     "Ramps use unsigned long-axis tilt only; signed full reference vectors are not independently established.",
-    "Only two ramp angles; no confirmed affine-model failure; live physical rehearsal pending.",
+    "This file covers the 22 October ramps (two heights). The 23 October four-height session, the model comparison and the limit evidence are in results/angle-validation-2026-10-23 and results/evidence-2026-10-23.",
     "Low variation is a rest heuristic, not proof of stationarity."
   ]
 }
