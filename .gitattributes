@@ -13,6 +13,12 @@ data/processed/static-2026-10-21/training.csv -text whitespace=blank-at-eol,blan
 data/processed/static-2026-10-21/testing.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # The angle audit hashes its input protocol as exact bytes, like raw sources.
 data/splits/angles-2026-10-22/protocol.json -text whitespace=cr-at-eol
+data/splits/angles-2026-10-23/protocol.json -text whitespace=cr-at-eol
+# Frozen inputs are hashed by the four-height validation audit.
+calibration/fit-static-2026-10-21.json -text whitespace=cr-at-eol
+results/analysis-2026-10-23/frozen-policy.json -text whitespace=cr-at-eol
+# Preserve the teammate's original notebook and its recorded hash on every checkout.
+main.ipynb -text
 data/processed/angles-2026-10-22/training.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/processed/angles-2026-10-22/testing.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/processed/angles-2026-10-22/limit.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

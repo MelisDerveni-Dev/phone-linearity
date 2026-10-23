@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "schema_version": 1,
+    "role": "held-out validation only; no fitting or threshold selection",
+    "contact_spacing_m": 0.16,
+    "support_orientation": "screen_up",
+    "height_order_m": [
+      0.0,
+      0.04,
+      0.08,
+      0.11
+    ],
+    "geometry_source": "User-confirmed phone hypotenuse and wall/table heights. Same long-axis slope orientation in all four runs.",
+    "zero_reference_note": "Nominal table-rest 0 degrees, resting on rear-camera bumps; independent levelling of the phone body is not established.",
+    "height_uncertainty_m": null,
+    "length_uncertainty_m": null,
+    "calibration_sha256": "1da01517e2f28876eda4bdaf0abcf3232eb06352c5ae681256819e5674bb7132",
+    "frozen_policy_sha256": "6d0e9483906dfd941c4477029e7cf067a7d7c6257ae05968cc496fafc8a6d1b7"
+  },
+  "input_sha256": {
+    "data/raw/Acceleration with g 2026-10-23 11-40-57/Raw Data.csv": "09026101bbadbe0280d9f36fcd4f8e4d5c9fcf75a0a1634382708c235c7d8b38",
+    "data/raw/Acceleration with g 2026-10-23 11-40-57/meta/time.csv": "64176aeb01ca93401991ddc157969520b381b17257cef52acb46c3810cd85a7a",
+    "data/raw/Acceleration with g 2026-10-23 11-40-57/meta/device.csv": "6bde6af06c394b374bb41b7f8967d3e03aa9a8898af5aa98c0e2a3d4739d58bb",
+    "data/splits/angles-2026-10-23/protocol.json": "13998d3c83fe16411d695f4df048c5f17c1d5fa6532df99b08b881fd05915008",
+    "calibration/fit-static-2026-10-21.json": "1da01517e2f28876eda4bdaf0abcf3232eb06352c5ae681256819e5674bb7132",
+    "results/analysis-2026-10-23/frozen-policy.json": "6d0e9483906dfd941c4477029e7cf067a7d7c6257ae05968cc496fafc8a6d1b7"
+  },
+  "frozen_stability_threshold_m_s2": 0.05,
+  "samples": 57686,
+  "included_samples": 53673,
+  "summary": {
+    "aggregation": "Four run means, equal weight; same samples for raw/corrected; model and policy frozen.",
+    "raised_only_note": "Three nonzero heights, reported separately because table rest includes camera bumps.",
+    "raw_tilt_rmse_deg": 3.9885619177831426,
+    "raw_raised_only_tilt_rmse_deg": 4.604337522729063,
+    "corrected_tilt_rmse_deg": 4.1106468787726005,
+    "corrected_raised_only_tilt_rmse_deg": 4.74040259920503
+  },
+  "segments": [
+    {
+      "segment_id": 1,
+      "start_s": 0.0,
+      "end_s": 30.43034311,
+      "duration_s": 30.43034311,
+      "wall_start": "2026-10-23 11:34:58.315 UTC+02:00",
+      "wall_end": "2026-10-23 11:35:28.746 UTC+02:00",
+      "pause_before_s": null,
+      "height_m": 0.0,
+      "contact_spacing_m": 0.16,
+      "reference_angle_deg": 0.0,
+      "reference_status": "nominal table rest; camera bumps",
+      "total_samples": 14404,
+      "included_samples": 13207,
+      "raw_angle_deg": 0.18636689171456475,
+      "raw_signed_error_deg": 0.18636689171456475,
+      "raw_absolute_error_deg": 0.18636689171456475,
+      "corrected_angle_deg": 0.4188324727170215,
+      "corrected_signed_error_deg": 0.4188324727170215,
+      "corrected_absolute_error_deg": 0.4188324727170215,
+      "first_source_row": 1,
+      "last_source_row": 14404,
+      "mean_xyz_m_s2": [
+        0.3095222173187071,
+        0.032062410069017444,
+        9.852224184092972
+      ],
+      "std_xyz_m_s2": [
+        0.0077673298390897915,
+        0.00811968039500851,
+        0.010226010148926684
+      ],
+      "boundary_excluded_samples": 939,
+      "interior_excluded_samples": 258
+    },
+    {
+      "segment_id": 2,
+      "start_s": 30.43034311,
+      "end_s": 60.56579701,
+      "duration_s": 30.135453899999998,
+      "wall_start": "2026-10-23 11:38:16.217 UTC+02:00",
+      "wall_end": "2026-10-23 11:38:46.352 UTC+02:00",
+      "pause_before_s": 167.47099995613098,
+      "height_m": 0.04,
+      "contact_spacing_m": 0.16,
+      "reference_angle_deg": 14.477512185929925,
+      "reference_status": "user-measured wall geometry",
+      "total_samples": 14263,
+      "included_samples": 13325,
+      "raw_angle_deg": 11.141429406811888,
+      "raw_signed_error_deg": -3.336082779118037,
+      "raw_absolute_error_deg": 3.336082779118037,
+      "corrected_angle_deg": 10.694321180941413,
+      "corrected_signed_error_deg": -3.7831910049885114,
+      "corrected_absolute_error_deg": 3.7831910049885114,
+      "first_source_row": 14405,
+      "last_source_row": 28667,
+      "mean_xyz_m_s2": [
+        0.022474036578218236,
+        1.9084848070101996,
+        9.69050718870752
+      ],
+      "std_xyz_m_s2": [
+        0.00767392185724999,
+        0.008031344007582129,
+        0.010024475030010856
+      ],
+      "boundary_excluded_samples": 938,
+      "interior_excluded_samples": 0
+    },
+    {
+      "segment_id": 3,
+      "start_s": 60.56579701,
+      "end_s": 92.11334997,
+      "duration_s": 31.547552960000004,
+      "wall_start": "2026-10-23 11:39:19.611 UTC+02:00",
+      "wall_end": "2026-10-23 11:39:51.158 UTC+02:00",
+      "pause_before_s": 33.259000062942505,
+      "height_m": 0.08,
+      "contact_spacing_m": 0.16,
+      "reference_angle_deg": 30.000000000000004,
+      "reference_status": "user-measured wall geometry",
+      "total_samples": 14933,
+      "included_samples": 13993,
+      "raw_angle_deg": 25.900303296280736,
+      "raw_signed_error_deg": -4.0996967037192675,
+      "raw_absolute_error_deg": 4.0996967037192675,
+      "corrected_angle_deg": 25.724863064144884,
+      "corrected_signed_error_deg": -4.2751369358551194,
+      "corrected_absolute_error_deg": 4.2751369358551194,
+      "first_source_row": 28668,
+      "last_source_row": 43600,
+      "mean_xyz_m_s2": [
+        -0.03225360060529447,
+        4.3209256817990385,
+        8.898416893542189
+      ],
+      "std_xyz_m_s2": [
+        0.007774179319672842,
+        0.00810529627735875,
+        0.010192357245391455
+      ],
+      "boundary_excluded_samples": 940,
+      "interior_excluded_samples": 0
+    },
+    {
+      "segment_id": 4,
+      "start_s": 92.11334997,
+      "end_s": 121.8746842,
+      "duration_s": 29.761334230000003,
+      "wall_start": "2026-10-23 11:40:17.604 UTC+02:00",
+      "wall_end": "2026-10-23 11:40:47.365 UTC+02:00",
+      "pause_before_s": 26.44600009918213,
+      "height_m": 0.11,
+      "contact_spacing_m": 0.16,
+      "reference_angle_deg": 43.432536557789774,
+      "reference_status": "user-measured wall geometry",
+      "total_samples": 14086,
+      "included_samples": 13148,
+      "raw_angle_deg": 37.46070177290014,
+      "raw_signed_error_deg": -5.971834784889637,
+      "raw_absolute_error_deg": 5.971834784889637,
+      "corrected_angle_deg": 37.531272251972695,
+      "corrected_signed_error_deg": -5.9012643058170795,
+      "corrected_absolute_error_deg": 5.9012643058170795,
+      "first_source_row": 43601,
+      "last_source_row": 57686,
+      "mean_xyz_m_s2": [
+        0.012606906662794553,
+        6.018450181000995,
+        7.854535690825911
+      ],
+      "std_xyz_m_s2": [
+        0.007661912358464314,
+        0.008121341986788275,
+        0.010073756121240772
+      ],
+      "boundary_excluded_samples": 938,
+      "interior_excluded_samples": 0
+    }
+  ],
+  "derived_csv": {
+    "path": "data/processed/angles-2026-10-23/validation.csv",
+    "sha256": "5808a94ed199a2744490377940673889916ef81e21e809e53d424e3a4f2c75e0"
+  },
+  "limitations": [
+    "The zero-height run rests on camera bumps; actual body level is not independently established.",
+    "Each of four distinct heights has one acquisition; repeatability is not quantified within this new session.",
+    "Measurement precision and case/rate consistency remain unspecified; reference values are retained as supplied.",
+    "No retraining or threshold tuning; previous angle validation remains a separate recorded experiment.",
+    "A worse tilt result is not uniquely attributed to sensor nonlinearity or reference error."
+  ]
+}

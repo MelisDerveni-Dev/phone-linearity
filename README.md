@@ -2,11 +2,41 @@
 
 ### Is your phone linear?
 
+**Authors: Melis Derveni and Harsimranjeet Kaur.** Melis carried out measurements and experiments and prepared the other deliverables, including the report, README and live demonstration. Harsimranjeet developed model training, testing and evaluation. Both worked on the project and jointly discussed and agreed the approach, model and analysis choices. See [contributions and joint tradeoffs](docs/team-contributions.md).
+
 A small laboratory for a big question: **can one affine model describe your phone's accelerometer?** A live phyphox viewer pairs the phone's original signal with the same signal after an affine correction, in a parchment-and-brass instrument panel inspired by a scientist turning gears.
 
-**Current milestone · 22 October 2026.** Report and live demo foundations are ready. Static repeats and a new nine-run angle/shaking export have been inventoried and split. Ramp heights/orientations are confirmed and quiet runs have a reversible boundary mask. The Python fitting package, scientific rest detector, fitted coefficients, empirical improvements and a confirmed affine failure case remain pending.
+**Current milestone · 23 October 2026.** A separate Python analysis extends the teammate's unchanged regression notebook. The nominal static-repeat vector RMSE improves from **0.215965 to 0.111114 m/s²**, while the new four-height held-out tilt RMSE is **3.988562° raw / 4.110647° corrected**. Earlier angle results remain recorded separately. A measured four-page report, tests, figures, and viewer-compatible fitted JSON are ready. Physical fitted-phone rehearsal, geometry uncertainty, signatures and a referenced affine-failure case remain outstanding.
 
 **For teammates and coding agents:** read [AGENTS.md](AGENTS.md) first for the current status, architecture, scientific rules, collaboration workflow, and next milestones.
+
+## Reproduce the measured analysis
+
+Python 3.10+ is separate from the dependency-free Node viewer. From the repository root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[test,report]"
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m calib.analysis
+.\.venv\Scripts\python.exe scripts/validate_new_angles.py
+npm.cmd --prefix report ci
+.\.venv\Scripts\python.exe report/build_report.py
+```
+
+On macOS/Linux use `.venv/bin/python` instead. If Windows' `python` alias is unavailable, use the explicit interpreter fallback in [data/README.md](data/README.md). The analysis verifies acquisition hashes, freezes the stability policy using static training only, fits equal-weight pose means, and evaluates static/angle holdouts without retuning. It reproduces the original notebook's full-row result separately. No notebook or source CSV is edited.
+
+The new four-height command loads the existing frozen calibration/policy; it does not train. Those archived inputs and the acquisition protocol retain exact Git bytes for their audit hashes. A differently regenerated fit is intentionally rejected by this fixed-model evaluation.
+
+Read [static analysis](results/analysis-2026-10-23/README.md), [new four-height validation](results/angle-validation-2026-10-23/README.md), [the four-page report](report/report-draft.pdf), and [the rehearsal guide](docs/demo-rehearsal.md). The four PNGs and compact result tables/JSON are versioned under `results/analysis-2026-10-23/`; large per-sample masks remain ignored and reproducible under `data/processed/analysis-2026-10-23/`. Existing ignore rules are unchanged.
+
+To run the demo with the measured fit:
+
+```powershell
+npm.cmd start -- --calibration calibration/fit-static-2026-10-21.json
+```
+
+`npm start` works outside the Windows PowerShell restriction. The fit comes from six nominal ±g poses, including placement uncertainty; it does **not** establish universal accuracy improvement. Both angle acquisition labels are validation only. The demo keeps identity as the default when no calibration is supplied.
 
 ## Run the live observatory
 
@@ -92,7 +122,7 @@ If connection fails, open the displayed phyphox URL directly in your browser. Ch
 ## The model
 
 ```text
-Measured:     m = S a + b + noise
+Measured:     m = S a + b
 Corrected:    a_hat = solve(S, m - b)
 ```
 
@@ -123,10 +153,11 @@ data/processed/         Reproducible training/testing CSVs; future rest masks/ta
 data/splits/            Compact split audit, exact boundaries and source/output hashes
 data/README.md          Inventory, split command, collection protocol and open questions
 data/recordings.csv     One metadata row per original recording CSV
-src/calib/              Reserved Python calibration package
+src/calib/              Affine class, strict CSV reader, stability masks and analysis CLI
 calibration/            Identity JSON; future fitted parameters
 experiments/            Optional acceleration + fused-attitude phyphox configuration
-results/figures/        Future evidence plots
+results/analysis-2026-10-23/ Measured metrics, provenance and four evidence figures
+results/figures/        Other future evidence plots
 results/metrics/        Future held-out metrics
 web/                    Local dashboard HTML, CSS and JavaScript
 scripts/                Node live bridge, Windows launcher and Python split utility
@@ -134,7 +165,7 @@ tests/                  Live bridge and calibration-application checks
 decisions.md            Decisions, alternatives and evidence
 ```
 
-Read [the report draft](report/report-draft.pdf) or edit [its Markdown source](report/report.md). To rebuild the PDF, optionally install the document-only dependency with `python -m pip install reportlab`, then run `python report/build_report.py`. Python is not required to run the live viewer.
+Read [the typeset report](report/report-draft.pdf), open [the self-contained KaTeX HTML](report/report.html), or edit [the LaTeX/Markdown source](report/report.md). See [report build instructions](report/README.md). Document-only KaTeX/Markdown tooling and Python Playwright produce the four-page PDF; the live viewer still needs no npm install or Python.
 
 ## Verification
 
@@ -143,7 +174,7 @@ npm test
 npm run check
 ```
 
-Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, correction versus reference error, orientation quaternion math, physical phone proportions, independent attitude timestamps, and HTTP boundaries. They do not establish the accuracy of a real phone. The course also requires future **pytest** tests of the Python loader, rest detector, and fit/apply class, including parameter recovery from synthetic data; the present Node tests do not replace those.
+Tests exercise known affine correction, invalid calibration, official phyphox-style buffer discovery, a mock phone with incremental samples, start/stop, reconnect/session handling, event streaming to two windows, bounded client history, spike-preserving trace reduction, signed tilt, correction versus reference error, orientation quaternion math, physical phone proportions, independent attitude timestamps, and HTTP boundaries. They do not establish the accuracy of a real phone. The separate Python pytest suite covers CSV validation, stability masks, training-only policy selection, affine recovery, JSON round-trip and deficient/invalid inputs. Node and Python tests establish implementation behavior, not physical sensor accuracy.
 
 ## Reproduce the static dataset split
 
@@ -165,16 +196,13 @@ python -m unittest discover -s tests -p "test_static_split.py" -v
 
 No Python dependencies are required for this utility. It uses the twelve START/PAUSE intervals to retain complete recordings: first of each pose pair trains, second tests. Outputs: `data/processed/static-2026-10-21/training.csv` (86,323 samples) and `testing.csv` (86,124 samples). The original export is unchanged; no preprocessing or fitting has been done. [Read the audit](data/splits/static-2026-10-21/README.md) and [data protocol](data/README.md), including the Windows interpreter fallback. These repeats came from one collection session; independent ramp validation is still required. Both CSVs are included in Git at the user's request and remain reproducible from source. Other processed artifacts stay ignored; dataset bytes are preserved across checkouts for hash verification.
 
-## Next milestone — after collection
+## Remaining physical and submission steps
 
-- Complete independent ramp recordings and an independently referenced limit candidate; confirm case, support alignment and sampling settings. Six static faces twice are now archived as within-session repeats.
-- Implement the Python CSV loader and rest detector with at least three meaningful tests.
-- Implement the Python `fit(...)` / `apply(...)` class using least squares, with JSON save/load and synthetic parameter-recovery tests.
-- Report rank and condition numbers, fit residuals and held-out raw/corrected errors in m/s² and degrees.
-- Confirm a failure with evidence and explain whether it belongs to the affine sensor model or the gravity-only interpretation.
-- Replace report placeholders with measured results, keep the PDF to 3–4 pages and at most four figures, sign contributions, and rehearse a new live recording.
-
-Commands for these future results will be documented when implemented. There are no working `python -m calib fit` or analysis commands in this milestone.
+- Verify case/sampling consistency and ruler/contact uncertainty; explain the recorded geometry disagreement without changing held-out references to match the phone.
+- Rehearse the fitted JSON on the physical phone, including separate display, start/stop and honest reference comparisons.
+- Four distinct height settings are now recorded (0/4/8/11 cm). Nominal zero rests on camera bumps; add repeats if estimating repeatability. Establish an independently referenced limit experiment before claiming affine sensor failure.
+- Melis Derveni and Harsimranjeet Kaur should sign and date the measured report; their names and contributions are recorded.
+- Preserve the negative angle result and the slight worsening of the -Z static vector error. The current report emphasises the static calibration benefit while stating the angle limitation concisely. More tuning requires new training data and new validation.
 
 ## References and course logistics
 

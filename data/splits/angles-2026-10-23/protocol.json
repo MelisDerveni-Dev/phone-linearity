@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "role": "held-out validation only; no fitting or threshold selection",
+  "contact_spacing_m": 0.16,
+  "support_orientation": "screen_up",
+  "height_order_m": [0.0, 0.04, 0.08, 0.11],
+  "geometry_source": "User-confirmed phone hypotenuse and wall/table heights. Same long-axis slope orientation in all four runs.",
+  "zero_reference_note": "Nominal table-rest 0 degrees, resting on rear-camera bumps; independent levelling of the phone body is not established.",
+  "height_uncertainty_m": null,
+  "length_uncertainty_m": null,
+  "calibration_sha256": "1da01517e2f28876eda4bdaf0abcf3232eb06352c5ae681256819e5674bb7132",
+  "frozen_policy_sha256": "6d0e9483906dfd941c4477029e7cf067a7d7c6257ae05968cc496fafc8a6d1b7"
+}

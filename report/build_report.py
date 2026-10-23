@@ -1,103 +1,161 @@
-"""Build the four-page draft PDF from report.md (optional: pip install reportlab).
+"""Typeset LaTeX with local KaTeX; create self-contained HTML and four-page PDF.
 
-This is a document tool, not the deferred calibration/analysis implementation.
-Run from repository root: python report/build_report.py
+Setup: npm --prefix report ci; pip install -e ".[report]"
+Uses installed Edge/Chrome, or Playwright Chromium (playwright install chromium).
+The live viewer remains dependency-free. No report assets load from a CDN.
 """
+import base64
+from html import escape
+import json
+import mimetypes
 from pathlib import Path
 import re
-from html import escape
-from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Preformatted
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.enums import TA_LEFT
+import shutil
+import subprocess
+import csv
+
+from playwright.sync_api import sync_playwright
+from pypdf import PdfReader, PdfWriter
 
 BASE = Path(__file__).resolve().parent
-FONT = Path('C:/Windows/Fonts')
-if (FONT / 'times.ttf').exists():
-    pdfmetrics.registerFont(TTFont('ReportSerif', str(FONT / 'times.ttf')))
-    pdfmetrics.registerFont(TTFont('ReportBold', str(FONT / 'timesbd.ttf')))
-    pdfmetrics.registerFont(TTFont('ReportSans', str(FONT / 'arial.ttf')))
-    BODY, BOLD, SANS = 'ReportSerif', 'ReportBold', 'ReportSans'
-else:
-    BODY, BOLD, SANS = 'Times-Roman', 'Times-Bold', 'Helvetica'
+AUTHORS = "Melis Derveni and Harsimranjeet Kaur"
 
-styles = getSampleStyleSheet()
-styles.add(ParagraphStyle(name='BodyReport', fontName=BODY, fontSize=11, leading=14.1, spaceAfter=7, textColor=colors.HexColor('#25312f')))
-styles.add(ParagraphStyle(name='SectionReport', fontName=BOLD, fontSize=14, leading=18, spaceBefore=7, spaceAfter=9))
-styles.add(ParagraphStyle(name='TitleReport', fontName=BOLD, fontSize=25, leading=29, spaceAfter=12))
-styles.add(ParagraphStyle(name='EquationReport', fontName='Courier', fontSize=9.3, leading=13, leftIndent=9, spaceAfter=9, spaceBefore=2))
 
-equations = [
-    'm = S a + b + epsilon;   S: 3 x 3 matrix, b: 3-vector',
-    '[m; 1] = [[S, b], [0, 1]] [a; 1]',
-    'X_i = [a_ix, a_iy, a_iz, 1]\nM_i = mean(m_i)^T;   B = [S^T; b^T]',
-    'S_hat a_hat = m - b_hat',
-]
+def data_uri(path):
+    media = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    if path.suffix == ".woff2":
+        media = "font/woff2"
+    return f"data:{media};base64," + base64.b64encode(path.read_bytes()).decode("ascii")
 
-def inline_math(text):
-    substitutions = {
-        r'\mathbb{R}': 'R', r'\mathbb{R}^3': 'R^3', r'\times': ' x ',
-        r'\varepsilon': 'epsilon', r'\theta': 'theta', r'\mathrm{m/s^2}': 'm/s²',
-        r'\mathrm{rank}': 'rank', r'\arg\min': 'argmin', r'\bar m_i': 'mean(m_i)',
-        r'\hat B': 'B_hat', r'\hat S': 'S_hat', r'\hat b': 'b_hat', r'\hat a': 'a_hat',
-        r'\kappa_2': 'kappa_2', r'\arcsin': 'asin', r'\operatorname{atan2}': 'atan2',
-        r'\sqrt': 'sqrt', r'\sum_i': 'sum_i', r'\|': '|', r'\pm': '+/-',
-        r'\sin': 'sin', r'\circ': '°', r'\quad': ' ', r'\qquad': ' ',
-        r'\,': ' ', r'\!': '', r'\in': ' in ', r'\begin{bmatrix}': '[', r'\end{bmatrix}': ']',
-    }
-    for old, new in substitutions.items():
-        text = text.replace(old, new)
-    text = text.replace(r'\\', '; ').replace('&', ', ').replace('{', '(').replace('}', ')')
-    text = text.replace(chr(92), '')
-    return text
 
-def rich(text):
-    text = re.sub(r'\\\((.*?)\\\)', lambda m: inline_math(m.group(1)), text)
-    text = escape(text)
-    text = re.sub(r'\*\*(.*?)\*\*', lambda m: f'<font name="{BOLD}">{m.group(1)}</font>', text)
-    text = re.sub(r'`([^`]+)`', r'<font name="Courier" size="9">\1</font>', text)
-    return text.replace('\n', '<br/>')
+def katex_css():
+    dist = BASE / "node_modules/katex/dist"
+    css = (dist / "katex.min.css").read_text(encoding="utf-8")
+    # Modern Chromium needs only WOFF2. Keep fonts embedded for offline sharing.
+    def modern_source(match):
+        woff2 = re.search(r"url\([^)]*\.woff2\)[^,;}]*", match[1])
+        if not woff2:
+            raise ValueError("Expected a WOFF2 source in the KaTeX font CSS")
+        return "src:" + woff2[0]
+    expected_faces = css.count("@font-face")
+    # Minified KaTeX ends src declarations at `}`, often without `;`.
+    # Never consume the next font-face block (or the KaTeX base font rule).
+    css = re.sub(r"src:([^;}]+)", modern_source, css)
+    if expected_faces < 20 or css.count("@font-face") != expected_faces:
+        raise ValueError("KaTeX font-face definitions were lost during embedding")
+    def embed(match):
+        path = dist / match[1].strip("\"'")
+        return "url(" + data_uri(path) + ")"
+    return re.sub(r"url\(([^)]+)\)", embed, css)
+
+
+def report_figures():
+    """Report-specific, readable single-panel plots from unchanged result tables."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    result = BASE.parent / "results"
+    target = BASE / "figures"
+    target.mkdir(exist_ok=True)
+    specs = [
+        ("analysis-2026-10-23/static-test.csv", "pose", "vector_error_m_s2", "Vector error (m/s²)", "static-vector.png", "#287268"),
+        ("angle-validation-2026-10-23/angle-validation.csv", "height_m", "absolute_error_deg", "Tilt error (degrees)", "angle-tilt.png", "#bf7055"),
+    ]
+    for filename, label, key, ylabel, image, color in specs:
+        with (result / filename).open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream))
+        fig, ax = plt.subplots(figsize=(4.7, 3.9))
+        x = list(range(len(rows)))
+        ax.bar([v-.18 for v in x], [float(r["raw_"+key]) for r in rows], .36, label="Raw", color="#b1b8b2")
+        ax.bar([v+.18 for v in x], [float(r["corrected_"+key]) for r in rows], .36, label="Corrected", color=color)
+        ax.set_xticks(x, [r[label] if label == "pose" else f"{float(r[label])*100:.0f} cm" for r in rows])
+        ax.set_ylabel(ylabel, fontsize=11)
+        ax.set_xlabel("Static pose" if label == "pose" else "Wall height (0 cm nominal)", fontsize=10)
+        ax.legend(frameon=False, fontsize=9)
+        ax.grid(axis="y", color="#e1e6e1", linewidth=.6)
+        ax.set_axisbelow(True)
+        for spine in ("top", "right", "left"):
+            ax.spines[spine].set_visible(False)
+        ax.spines["bottom"].set_color("#aebcb1")
+        ax.tick_params(labelsize=10, length=0)
+        fig.tight_layout(pad=.8)
+        fig.savefig(target / image, dpi=200, facecolor="#fffefa")
+        plt.close(fig)
+
 
 def make():
-    raw = (BASE / 'report.md').read_text(encoding='utf-8')
-    raw = raw.replace('## 3. Model and estimation', '\f## 3. Model and estimation')
-    raw = raw.replace('## 4. Evidence: five required answers', '\f## 4. Evidence: five required answers')
-    raw = raw.replace('**5 — Where does the model fail?**', '\f**5 — Where does the model fail?**')
-    equation_index = 0
-    story = []
-    for page_idx, page in enumerate(raw.split('\f')):
-        if page_idx:
-            story.append(PageBreak())
-        for block in re.split(r'\n\s*\n', page.strip()):
-            if block.startswith(r'\['):
-                story.append(Preformatted(equations[equation_index], styles['EquationReport']))
-                equation_index += 1
-            elif block.startswith('# '):
-                story.append(Paragraph(rich(block[2:]), styles['TitleReport']))
-            elif block.startswith('## '):
-                story.append(Paragraph(rich(block[3:]), styles['SectionReport']))
-            else:
-                story.append(Paragraph(rich(block.replace('  \n', '\n').replace('\n', ' ')), styles['BodyReport']))
+    node = shutil.which("node")
+    if not node or not (BASE / "node_modules/katex").exists():
+        raise SystemExit("Install document tooling first: npm --prefix report ci")
+    report_figures()
+    rendered = subprocess.run([node, str(BASE / "render_report.cjs"), str(BASE / "report.md")],
+                              check=True, capture_output=True, encoding="utf-8")
+    pages = json.loads(rendered.stdout)["pages"]
+    css = katex_css() + "\n" + (BASE / "report.css").read_text(encoding="utf-8")
+    sections = []
+    for i, content in enumerate(pages, 1):
+        def embed_image(match):
+            path = (BASE / match[1]).resolve()
+            return 'src="' + data_uri(path) + '"'
+        content = re.sub(r'src="([^"\n]+)"', embed_image, content)
+        sections.append(f'''<article class="page" aria-label="Report page {i}">
+<header class="page-header"><span>The Affine Observatory</span><span>23 October 2026 · measured draft</span></header>
+<main class="page-content">{content}</main>
+<footer class="page-footer"><span>Melis Derveni · Harsimranjeet Kaur</span><span>{i} / 4</span></footer></article>''')
+    license_text = (BASE / "node_modules/katex/LICENSE").read_text(encoding="utf-8")
+    html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="{escape(AUTHORS)}"><title>Is your phone linear?</title>
+<style>{css}</style></head><body>{''.join(sections)}
+<!-- KaTeX license: {escape(license_text)} --></body></html>'''
+    html_path = BASE / "report.html"
+    html_path.write_text(html, encoding="utf-8")
+    with sync_playwright() as p:
+        candidates = [Path("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"),
+                      Path("C:/Program Files/Google/Chrome/Application/chrome.exe")]
+        installed = next((str(path) for path in candidates if path.exists()), None)
+        options = {"executable_path": installed} if installed else {}
+        browser = p.chromium.launch(headless=True, **options)
+        page = browser.new_page(viewport={"width": 1100, "height": 1200})
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(html_path.as_uri(), wait_until="load")
+        page.evaluate("document.fonts.ready")
+        loaded_fonts = page.evaluate("""async () => {
+            const families = ['KaTeX_Main', 'KaTeX_Math', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3'];
+            const result = {};
+            for (const family of families) {
+                const loaded = await document.fonts.load('16px ' + family);
+                result[family] = loaded.length > 0 && document.fonts.check('16px ' + family);
+            }
+            return result;
+        }""")
+        if not all(loaded_fonts.values()):
+            browser.close()
+            raise RuntimeError(f"Required KaTeX fonts are unavailable: {loaded_fonts}")
+        page.emulate_media(media="print")
+        overflow = page.locator(".page-content").evaluate_all("els => els.map((e,i)=>({page:i+1,vertical:e.scrollHeight-e.clientHeight,horizontal:e.scrollWidth-e.clientWidth}))")
+        if any(item["vertical"] > 2 or item["horizontal"] > 2 for item in overflow):
+            browser.close()
+            raise RuntimeError(f"Report exceeds page content areas: {overflow}")
+        if page.locator(".katex-error").count() or errors:
+            browser.close()
+            raise RuntimeError(f"Math/browser rendering failed: {errors}")
+        pdf_bytes = page.pdf(format="A4", print_background=True, prefer_css_page_size=True,
+                             display_header_footer=False, tagged=True)
+        browser.close()
+    from io import BytesIO
+    reader = PdfReader(BytesIO(pdf_bytes))
+    if len(reader.pages) != 4:
+        raise RuntimeError(f"Expected four pages; got {len(reader.pages)}")
+    writer = PdfWriter(clone_from=reader)
+    writer.add_metadata({"/Title": "Is your phone linear?", "/Author": AUTHORS,
+                         "/Subject": "Measured affine accelerometer calibration and held-out validation"})
+    target = BASE / "report-draft.pdf"
+    with target.open("wb") as stream:
+        writer.write(stream)
+    print(f"{html_path}\n{target}\nVerified: 4 pages; local KaTeX fonts; no content overflow.")
 
-    def decoration(c, doc):
-        c.setFillColor(colors.HexColor('#8e6d3d'))
-        c.setFont(SANS, 8)
-        c.drawString(43, 813, 'THE AFFINE OBSERVATORY  /  SCIENTIFIC REPORT DRAFT')
-        c.drawRightString(552, 813, '20 OCT 2026')
-        c.setStrokeColor(colors.HexColor('#cdbf9f'))
-        c.line(43, 803, 552, 803)
-        c.line(43, 39, 552, 39)
-        c.setFillColor(colors.HexColor('#665e50'))
-        c.drawString(43, 26, 'Measurements pending — not a completed experimental report')
-        c.drawRightString(552, 26, str(doc.page))
 
-    target = BASE / 'report-draft.pdf'
-    doc = SimpleDocTemplate(str(target), pagesize=(595.28, 841.89), leftMargin=43, rightMargin=43, topMargin=49, bottomMargin=50, title='Is your phone linear? — report draft', author='Project team — names pending')
-    doc.build(story, onFirstPage=decoration, onLaterPages=decoration)
-    print(target)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     make()

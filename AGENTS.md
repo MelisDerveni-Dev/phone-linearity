@@ -3,12 +3,44 @@
 Read this file before changing the repository. It applies to the entire checkout.
 It gives either teammate's coding agent the project context and collaboration rules.
 
+## Integration checkpoint: 23 October 2026
+
+The user requested committing the completed work and publishing directly to `main`. The integration branch is now `main`, based on the latest remote merge of the original angle datasets. This checkpoint includes the separate calibration package, unchanged teammate notebook, fitted JSON, new raw four-height recording, measured results, tests and typeset report. Earlier branch/status notes below describe historical milestones. The supplied course PDF and ignored private/local artifacts are excluded.
+
+Review verification: 19 Python tests plus 8 subtests, 31 Node tests and syntax checks passed. Complete static and angle analyses reproduced the saved metrics in a temporary directory on this Windows environment. The report has four pages. Review identified outstanding issues: regeneration can change the byte hashes required by frozen validation across platforms; failed connection resets are not broadcast; Python JSON round-trips can promote an unverified calibration's fitted flag; the display motion guard can count a data gap as quiet time; and the original notebook has a standalone indentation error. These findings are recorded, not fixed by this publication checkpoint. Physical rehearsal, independent affine-failure evidence and signatures remain pending.
+
 ## Start here
 
 1. Read `README.md`, `decisions.md`, and `data/README.md`.
 2. Inspect `git status --short --branch` and the recent commits. Preserve any existing work.
 3. Read the files involved in the current request before editing them. This handoff is a dated snapshot; verify the current implementation.
 4. Stay within the user's current request. The course brief describes the eventual submission; it does not authorize implementing every future milestone immediately.
+
+## Update: new four-height validation and independent visual review, 23 October 2026
+
+The new original export `data/raw/Acceleration with g 2026-10-23 11-40-57/` has four runs, 57,686 samples, user-confirmed 0/4/8/11 cm heights, 16 cm hypotenuse, screen-up throughout. The zero-height recording rests on rear-camera bumps: nominal zero, not an independently levelled body. `python scripts/validate_new_angles.py` evaluates the existing frozen calibration and policy by hash; it never fits or tunes. All rows/strings survive in an ignored reproducible per-sample CSV, with compact protocol/audit in `data/splits/angles-2026-10-23/` and results/plots in `results/angle-validation-2026-10-23/`. New tilt RMSE is 3.988562 -> 4.110647 degrees; raised-only sensitivity is 4.604338 -> 4.740403. Static improvement remains unchanged. One acquisition per height; earlier angle results remain separate. The report emphasises the static benefit while retaining the angle figures and concise limitation honestly.
+
+The user explicitly requested an independent visual reviewer. A separate agent confirmed/probed the matrix defect: the font src regex consumed CSS closing braces and dropped 19 of 20 KaTeX font-face declarations. It is fixed by stopping at `;` or `}`. The builder now asserts 20 font-face declarations and successful registration/loading of required KaTeX font families before printing. Independent final review of every PDF page and matrix passed: no bracket clipping, superscript collisions, table/caption/footer overlap or external assets. The new report remains four pages. Work is on `analysis/new-angle-validation`; no merge or push is implied. Notebook, raw exports, previous processed data, existing fit/policy and old metrics remain unchanged. Ignore rules are unchanged; the new hashed protocol has exact-byte Git attributes.
+
+## Report typography and validation clarification: 23 October 2026
+
+The report now uses actual LaTeX source rendered with local KaTeX, accessible MathML, real matrix environments, comparison tables and an editorial four-page layout. `report/build_report.py` creates offline self-contained `report/report.html` and browser-printed `report/report-draft.pdf`; equations are no longer replaced by plain-text strings. Named author metadata and blank signatures are preserved. Report-only Node dependencies are isolated in `report/package.json`/lock; the Python report extra uses Playwright/pypdf. `report/figures/` contains report-specific charts derived from the unchanged analysis CSVs. Ignore rules and the dependency-free viewer contract remain unchanged. The build checks math errors, horizontal/vertical overflow and four-page count; inspect the PDF visually.
+
+The user reconfirms the 16 cm hypotenuse and 5/10 cm wall contact heights as measured references. Do not attribute angle disagreement to bad measurements or change their values to match the phone. The current fit improves static repeat errors but worsens these held-out angle errors; the cause is not isolated. The user plans four NEW distinct validation angles; existing angle results remain recorded until new files are supplied/analysed. Angles are validation only, not fitting data. New target examples and acquisition notes are in `docs/demo-rehearsal.md`.
+
+## Authorship and model wording: 23 October 2026
+
+Authors are Melis Derveni and Harsimranjeet Kaur. Per the user's explicit contribution statement, Melis performed measurements/experiments and prepared the other deliverables (report, README, live demo); Harsimranjeet developed model training, testing and evaluation. Both worked on the project and jointly discussed/agreed the approach, model and tradeoffs. Details are in `docs/team-contributions.md` and the report. Do not replace these names/contributions with placeholders. Physical signatures/date remain blank for the authors to complete. The chosen fitted model is `m = S a + b`, with b the constant bias; no separate epsilon/noise term is fitted or predicted. Held-out residual errors remain reported measurements, not extra parameters. This wording change does not change fitted coefficients or scientific results.
+
+## Update: 23 October 2026 measured analysis and demo preparation
+
+At the user's explicit request, a separate Python package under `src/calib/` extends the teammate's `main.ipynb` regression without editing that notebook (SHA-256 15a8a3debec1300d42b86ad10939a77578ee9df173a462423eab4421f4d40371). NumPy least squares fits equal-weight static pose means with nominal ±g references, now authorized by the user despite camera/button alignment uncertainty. The CLI `python -m calib.analysis` verifies all acquisition hashes, freezes a 0.25 s RMS stability rule from static training (0.05 m/s² threshold), applies fixed 1 s boundary trims and 1 s minimum stable intervals with a 0.1 s gap guard, and evaluates the static repeat/angle holdouts unchanged. Large mask CSVs remain ignored/reproducible; compact metrics, four PNG figures and a result README are deliberately versioned under `results/analysis-2026-10-23/`. No ignore rules changed for this analysis milestone.
+
+Measured static vector RMSE is 0.215965 -> 0.111114 m/s² across six pose means; magnitude RMSE 0.078677 -> 0.048051 m/s²; direction RMSE 1.173729 -> 0.585285 degrees. -Z vector error worsens slightly. Unsigned long-axis tilt RMSE across all eight held-out angle run means worsens 3.267287 -> 3.726342 degrees. Do not claim universal accuracy or tune on these validation errors. Full signed ramp references and geometry uncertainty are not established. Case/rate consistency remains unconfirmed; the user's latest reply reconfirmed dimensions but gave no precision. Shaking is not proof of affine failure.
+
+`calibration/fit-static-2026-10-21.json` is a fitted/provenanced artifact, compatible with the unchanged live viewer. Run `npm.cmd start -- --calibration calibration/fit-static-2026-10-21.json`; without the option identity remains default. See `docs/demo-rehearsal.md`. Real headless Edge checks covered startup/upload/reset, both-window SSE state, correct numerical application, synthetic labels, reference guard, controls and desktop/mobile layout with no JS errors. Physical fitted-phone rehearsal remains pending. The report source/PDF now contains measured evidence (four pages, three figures); Melis Derveni and Harsimranjeet Kaur are the authors; their contributions are recorded. Signatures and an independently referenced affine-failure case remain outstanding.
+
+Setup/checks: `python -m pip install -e ".[test,report]"`, `python -m pytest`, `python -m calib.analysis`, `python report/build_report.py`; viewer checks `npm.cmd test` and `npm.cmd run check`. Fifteen Python tests and all 31 Node tests pass. The optional local browser/PDF QA dependencies are not part of the required viewer toolchain. Work is on `analysis/affine-validation`; no commit/push or default-branch change is implied. Earlier pending-implementation statements below are historical and superseded by this update.
 
 ## Update: 22 October 2026 angle preprocessing
 
@@ -47,7 +79,7 @@ Static collection and splitting were authorized on **21 October 2026**. Fitting 
 | Path | Purpose and editing guidance |
 | --- | --- |
 | `report/report.md` | Scientific report source. Replace pending results only with actual measured evidence. |
-| `report/build_report.py` | Optional ReportLab PDF generator; update it with the source if layout or equations change. |
+| `report/build_report.py` | KaTeX/Markdown to self-contained HTML and browser-printed PDF; see report/README.md. |
 | `report/report-draft.pdf` | Generated draft. Rebuild when report content changes; do not edit the PDF directly. |
 | `scripts/live.mjs` | Local HTTP server, phone polling, buffer discovery, matrix validation/application and shared stream state. |
 | `scripts/start-live.ps1` | Windows convenience launcher. |
@@ -69,7 +101,7 @@ Static collection and splitting were authorized on **21 October 2026**. Fitting 
 | `data/splits/` | Shared compact audit, interval table and manifest with source/output hashes. |
 | `data/README.md` | Collection protocol, device/settings and actual export headers/units. |
 | `data/processed/` | Derived masks/tables generally ignored. Static-2026-10-21 training/testing and angles-2026-10-22 training/testing/limit CSVs are explicitly versioned at the user's request; preserve their bytes. |
-| `src/calib/` | Reserved for the required future Python calibration package. |
+| `src/calib/` | Implemented affine fit/apply/JSON class, validated CSV reader, stability policy and analysis CLI. |
 | `calibration/identity.json` | Explicit uncalibrated reference; never relabel it as a measured fit. |
 | `calibration/params.json` | Intended future fitted artifact; currently ignored by Git. |
 | `results/figures/`, `results/metrics/` | Future derived evidence; currently ignored except for placeholders. |
@@ -106,7 +138,7 @@ Do not silently change artifact ignore rules. When reproducible results exist, d
 
 ## Scientific rules for the future implementation
 
-The working hypothesis is `m = S a + b + noise`: measured and reference vectors are in m/s^2; S is a dimensionless 3 by 3 matrix; b is a three-vector in m/s^2. Apply correction by solving `S a_hat = m - b`. This is affine when b is nonzero. Calibration does not remove gravity, remove random noise, or recover clipped information.
+The working hypothesis is `m = S a + b`: measured and reference vectors are in m/s^2; S is a dimensionless 3 by 3 matrix; b is a three-vector in m/s^2. Apply correction by solving `S a_hat = m - b`. This is affine when b is nonzero. Calibration does not remove gravity, remove random noise, or recover clipped information.
 
 - Use one phone and a consistent case configuration. Confirm actual exported columns, units and axis signs before implementing the loader or assigning references.
 - Preserve raw exports unchanged, including bad recordings. Record replacements separately and explain them in metadata. Generate cleaned data and masks elsewhere. `.gitattributes` disables text conversion under `data/raw/`.
@@ -153,7 +185,7 @@ npm run check
 
 On PowerShell systems that block `npm.ps1`, use `npm.cmd` for the same commands. For UI changes, also check real-browser layout and the affected interactions, including the separate display and honest preview/calibration labels. Report a physical-phone or browser verification limit explicitly rather than claiming it passed. The ignored local QA helpers are not a required toolchain on a teammate's machine.
 
-For report changes, install the optional document-only `reportlab` dependency if needed, run `python report/build_report.py`, and verify the generated PDF's content and 3-4-page limit. Python document dependencies are separate from the Node live viewer. Add packaging and pytest commands when the Python analysis package actually exists. Documentation-only changes do not require rerunning runtime tests.
+For report changes, install document-only tools with `npm.cmd --prefix report ci` and `python -m pip install -e ".[report]"`, run `python report/build_report.py`, and verify the four-page PDF and self-contained HTML. Installed Edge/Chrome or Playwright Chromium is required; see `report/README.md`. Python document dependencies are separate from the Node live viewer. Add packaging and pytest commands when the Python analysis package actually exists. Documentation-only changes do not require rerunning runtime tests.
 
 ## Private material and external documents
 

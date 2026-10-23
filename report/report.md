@@ -1,74 +1,190 @@
+<div class="eyebrow">01 / Experiment & question</div>
+
 # Is your phone linear?
 
-**Report draft · 20 October 2026 · Measurements pending**  
-Authors: [team member 1] and [team member 2]
+<p class="authors">Melis Derveni · Harsimranjeet Kaur<br>Measured report draft · 23 October 2026</p>
 
-## 1. Question and hypothesis
+<p class="lead">One phone, one affine correction. Does it improve measurements beyond the six positions used to fit it?</p>
 
-We ask whether a single affine calibration describes the three-axis accelerometer of our phone, how much it improves independent measurements, and where its predictions fail. Our working hypothesis is
+### In what sense linear?
 
-\[m = Sa+b+\varepsilon,\qquad S\in\mathbb{R}^{3\times3},\quad b\in\mathbb{R}^3.\]
+We model the measured acceleration vector \(\mathbf m\) from a reference \(\mathbf a\):
 
-Here \(m\) is the measured vector in m/s², \(a\) is the reference specific-force vector in the phone frame, \(b\) is a constant bias in m/s², \(S\) is a dimensionless matrix of gains and cross-axis sensitivities, and \(\varepsilon\) represents unexplained measurement error. At rest, the reference has magnitude approximately \(g=9.81\,\mathrm{m/s^2}\). We use phyphox **Acceleration with g**, because gravity is our reference signal.
+\[\boxed{\mathbf m=\mathbf S\mathbf a+\mathbf b}\qquad \mathbf S\in\mathbb R^{3\times3},\quad \mathbf b\in\mathbb R^3.\]
 
-This is an affine map; it is a linear map only when \(b=0\). In homogeneous coordinates,
+\(\mathbf S\) contains dimensionless gains and cross-axis coupling; \(\mathbf b\) is a constant bias in \(\mathrm{m\,s^{-2}}\). This is **affine**, linear when \(\mathbf b=\mathbf0\), and linear in twelve parameters. No separate noise term is fitted.
 
-\[\begin{bmatrix}m\\1\end{bmatrix}=\begin{bmatrix}S&b\\0&1\end{bmatrix}\begin{bmatrix}a\\1\end{bmatrix}.\]
+\[\begin{bmatrix}\mathbf m\\1\end{bmatrix}=\begin{bmatrix}\mathbf S&\mathbf b\\\mathbf0^\mathsf T&1\end{bmatrix}\begin{bmatrix}\mathbf a\\1\end{bmatrix}.\]
 
-The hypothesis is restricted to the tested acceleration range, temperature, and recording conditions. It does not claim that a static calibration removes random noise or recovers clipped information. **No empirical claim about this phone is made before measurements.**
+### Measurement design
 
-## 2. Data and experimental design
+Samsung Galaxy S25 Ultra (SM-S938B), Android 16, phyphox 1.2.1, **Acceleration with g**. The nominal stationary reference is \(g=9.81\,\mathrm{m\,s^{-2}}\); gravity remains in the signal.
 
-Data collection is planned for **21 October 2026**, following the user's schedule. We will use one phone and keep its case configuration fixed. Record its model, operating system, phyphox version, axis convention, and experiment settings. For each of the six signed axis orientations, record approximately 20 s at rest, supported by a flat surface or a book. Repeat all poses in a separate session. Assign session A to fitting and session B to testing **before examining errors**; keep the test session out of tuning and model selection.
+| Collection | Acquisition | Role |
+| --- | --- | --- |
+| 21 October | Six signed positions, two repeats each | First repeats fit; second repeats test |
+| Static samples | 86,323 training · 86,124 testing | Whole runs; no random row split |
+| 22 October | Eight angle runs · two heights | All angle runs held out from fitting |
+| 23 October | Four screen-up runs · four heights | New session; existing model unchanged |
+| Limit recording | 31.15 s shaking · 14,745 samples | Gravity-interpretation demonstration |
 
-We will record at least four independent ramp angles spanning 0°–45°. Measure the raised height \(h\) and the length \(L\) **along the inclined board between its support points**, so that \(\theta_{ref}=\arcsin(h/L)\). Record ruler uncertainty, phone position, tilt direction, and how the phone axes align with the ramp. A horizontal run would require arctangent instead. Avoid measuring \(L\) as the phone length unless it is also the support spacing.
+We use nominal references \(\pm g\mathbf e_x,\pm g\mathbf e_y,\pm g\mathbf e_z\), acknowledging camera/button contacts despite steady support. Static repeats are within-session.
 
-Keep every original phyphox export unchanged under `data/raw/`, with decimal points and documented headers and units. Enter one row per file in `data/recordings.csv`. Derived rest masks and pose means belong in `data/processed/`. For each pose, exclude handling at the start and end and retain stable intervals using a documented rolling variability criterion and minimum duration. Select thresholds on the fit session only, report exclusions, and check the masks visually.
+### Independent angle references
 
-**To complete after collection:** device and settings; actual dates, file counts and durations; headers; accepted pose intervals; ramp dimensions and uncertainties; limit-experiment conditions.
+The new screen-up session uses the same 16 cm hypotenuse, at contact heights 0, 4, 8 and 11 cm:
 
-## 3. Model and estimation
+\[\theta_{\mathrm{ref}}=\arcsin\!\left(\frac hL\right)\quad\Rightarrow\quad 0^\circ,\;14.48^\circ,\;30.00^\circ,\;43.43^\circ.\]
 
-For each accepted training pose \(i\), let \(\bar m_i\) be its mean measured vector and \(a_i\) its independently assigned reference vector, ideally one of \(\pm ge_x,\pm ge_y,\pm ge_z\). Determine axis signs from the phone convention and observations; do not assume that a named face automatically has a particular sign. Placement error is a source of reference uncertainty, not automatically a sensor defect.
+The 57,686 samples span four approximately 30 s runs. Table-rest 0° is nominal (camera bumps). References and earlier results remain unchanged.
 
-With one row per pose, define
+<!-- page -->
 
-\[X_i=[a_{ix},a_{iy},a_{iz},1],\quad M_i=\bar m_i^T,\quad B=\begin{bmatrix}S^T\\b^T\end{bmatrix}.\]
+<div class="eyebrow">02 / Calibration & identification</div>
 
-Estimate \(\hat B=\arg\min_B\|XB-M\|_F^2\) using a stable least-squares solver such as QR or SVD, without explicitly forming normal-equation inverses. Then \(\hat S=\hat B_{1:3,:}^{T}\) and \(\hat b=\hat B_{4,:}^{T}\). The problem is linear in the unknown entries of \(B\), even though the sensor may deviate from the proposed model. A successful fit does not itself establish physical linearity.
+## One model, twelve parameters
 
-The twelve parameters are uniquely determined when \(\mathrm{rank}(X)=4\). Four affinely independent known vectors suffice mathematically; six opposite-axis poses provide redundancy. The planned six vectors give rank four. A set confined to \(a_z=0\), such as \(\pm ge_x,\pm ge_y\), gives rank at most three and cannot identify sensitivity to \(a_z\). Repeating only one face gives rank one. Gravity magnitude alone cannot identify a completely general \(S\): reference directions are required, because arbitrary rotations preserve the magnitude.
+Harsimranjeet's regression fits one mean measured vector per training position. Equal pose weights prevent slightly longer recordings dominating. The separate analysis preserves her notebook and adds validation and reproducible exports.
 
-Report the measured design rank, singular values and condition number. Since the first three columns have units of acceleration and the last is an intercept, report both \(\kappa_2(X)\) and the condition number of the dimensionless design with \(a/g\) columns. Also report \(\kappa_2(\hat S)\); reject singular or unusably ill-conditioned calibration matrices. Apply calibration by solving
+\[\mathbf X_i=\begin{bmatrix}a_{ix}&a_{iy}&a_{iz}&1\end{bmatrix},\quad \mathbf M_i=\bar{\mathbf m}_i^\mathsf T,\quad \mathbf B=\begin{bmatrix}\mathbf S^\mathsf T\\\mathbf b^\mathsf T\end{bmatrix}.\]
 
-\[\hat S\,\hat a=m-\hat b,\]
+\[\widehat{\mathbf B}=\underset{\mathbf B}{\operatorname{argmin}}\,\lVert\mathbf X\mathbf B-\mathbf M\rVert_F^2,\qquad \widehat{\mathbf S}\,\widehat{\mathbf a}=\mathbf m-\widehat{\mathbf b}.\]
 
-and save \(\hat S,\hat b\), units, axis convention, and training provenance as JSON. The live viewer uses an explicitly labelled identity transform until fitted parameters are available. It must not present this as a measured improvement.
+We use SVD least squares, without normal-equation inversion. Correction solves the second equation; tilt is then calculated from the corrected vector. **There is no second angle regression.**
 
-## 4. Evidence: five required answers
+<div class="parameter-panel">
 
-**1 — In what sense linear?** The proposed sensor relation is affine, and linear in twelve unknown parameters. The homogeneous-coordinate representation above answers the mathematical distinction. **Pending:** measured coefficients and uncertainty or repeatability.
+### The fitted calibration
 
-**2 — Which linearity test?** Use an independently measured ramp rotation with reference \(a(\theta)\) determined by the documented axis convention. A chosen varying component obeys \(a_k=g\sin\theta\); test whether calibrated output follows this input on held-out angles, including both signs where feasible. For the full response, compare \(m(\theta)-\hat b\) against \(\hat S a(\theta)\). Its other reference components also change with angle, so account for them rather than treating the whole vector as a scaled input. A gravity-only ramp cannot test full-vector homogeneity over different magnitudes; it tests components and predictions over a sphere of fixed magnitude. Plot residuals versus reference input and angle and compare systematic structure against repeatability and reference uncertainty. **Pending:** slopes, intercepts, units, residuals and conclusion.
+\[\widehat{\mathbf S}=\begin{bmatrix}0.999562&-0.008063&0.015706\\0.005597&0.997870&0.003440\\-0.003154&0.005892&0.998447\end{bmatrix},\qquad \widehat{\mathbf b}=\begin{bmatrix}-0.050740\\0.068563\\0.104316\end{bmatrix}\;\mathrm{m\,s^{-2}}\]
 
-**3 — Which poses and why?** Compare the rank-four full training design to an intentionally restricted subset with deficient rank. **Pending:** measured rank, condition numbers and the consequences for fitted coefficients. The theoretical ranks above are predictions, not computed outcomes.
+<p>Rounded to six decimals. Full precision and training provenance are stored in the fitted JSON.</p>
 
-**4 — How much improvement?** On session B only, report before/after vector RMSE \(\sqrt{N^{-1}\sum_i\|v_i-a_i\|^2}\) in m/s² and gravity-magnitude RMSE \(\sqrt{N^{-1}\sum_i(\|v_i\|-g)^2}\). State whether \(N\) counts pose means or time samples; pose means avoid overweighting long recordings. Compute ramp tilt from the documented geometry, for example \(\theta=\operatorname{atan2}(v_k,\sqrt{v_j^2+v_l^2})\) for a signed component \(k\). Compare against the ruler reference and report tilt RMSE in degrees. Use identical test windows for raw and corrected values. **Pending:** all measured metrics; an improvement is not guaranteed.
+</div>
 
-**5 — Where does the model fail?** Preselect a limit experiment and record an independent indicator of its input or condition. A stationary drift experiment is a practical first choice: compare successive stable windows at the same supported pose over time and, if feasible, different documented temperatures. A repeatable bias change beyond baseline uncertainty would contradict a constant-parameter model. For optional controlled motion, residual tilt during shaking can demonstrate failure of gravity-only tilt inference, but is not sufficient proof that the accelerometer itself is non-affine: motion adds real specific force. Saturation would be a stronger sensor-limit example only if repeatable clipping and independent evidence of increasing input are available. **Pending:** an observed failure trace, quantified discrepancy, supported cause and user guidance. If a candidate shows no failure, report that and perform another justified candidate rather than invent a result.
+### Which positions, and why?
 
-Use at most **four figures**: (1) time traces and rest masks, (2) fitted residuals and design/pose evidence, (3) held-out raw/corrected vector and tilt errors, (4) limit experiment. Reserve figure space only after real data exists.
+Unique identification requires \(\operatorname{rank}(\mathbf X)=4\). Four affinely independent references suffice; six opposite positions add redundancy. The planar \(\pm X,\pm Y\) subset has rank 3 and cannot identify the Z response. One repeated reference has rank 1. Gravity magnitudes alone cannot determine arbitrary matrix orientation.
 
-## 5. Limits and next steps
+| Numerical check | Value |
+| --- | ---: |
+| Design rank | 4 |
+| Singular values of \(\mathbf X\) | 13.873435 (three times), 2.449490 |
+| \(\kappa_2(\mathbf X)\) / dimensionless \(\kappa_2(\mathbf X_g)\) | 5.663806 / 1.732051 |
+| \(\kappa_2(\widehat{\mathbf S})\) | 1.015951 |
 
-Six supported faces provide limited placement accuracy and input magnitudes. Ruler uncertainty, table alignment, within-session correlation, temperature changes and phone preprocessing may limit interpretation. Calibration does not separate gravity and motion. With another week, use a more accurate fixture, repeat on more days and temperatures, and test known dynamic inputs. A live demo will apply the fitted transform to a new recording and compare raw and corrected traces at the same timestamps and scale.
+### Stable samples, frozen choices
 
-## 6. Contribution statement
+Exclude the first/last second, then screen 0.25 s windows by local RMS vector variation. The training-only rule, \(\max(0.05,\mathrm{median}+8\times1.4826\,\mathrm{MAD})\), freezes at \(0.05\,\mathrm{m\,s^{-2}}\). Keep stable intervals of at least 1 s; gaps over 0.1 s break continuity. Masks were visually checked. Retained samples: **80,677 training; 80,474 testing**. No target-error filtering is used.
 
-[Name 1: actual experimental, coding and writing contributions.]  
-[Name 2: actual experimental, coding and writing contributions.]  
-Signatures and date: [both authors to complete].
+The authors jointly chose full affine coupling over a simpler diagonal model, accepting more parameters and sensitivity to reference alignment. Means give equal weights but hide variation, so raw data and masks are retained. Whole-run holdouts avoid adjacent-row mixing but remain correlated within a session. No choice was retuned using held-out errors.
 
-## Sources
+<!-- page -->
 
-Course brief: *Sprint project: Is your phone linear?*, dated 18 October 2026, supplied by the user. phyphox remote API: https://phyphox.org/docs/remote-interface/. Sensor definitions: https://phyphox.org/docs/file-format/input/. This draft supplies a proposed method; all results remain pending.
+<div class="eyebrow">03 / Held-out evidence</div>
+
+## Calibration results
+
+### How much improvement?
+
+Metrics compare identical windows and equally weight six static pose means or four new angle run means. Direction and tilt errors are distinct.
+
+<div class="metrics">
+
+| Held-out RMSE | Raw | Corrected |
+| --- | ---: | ---: |
+| Static vector · \(\mathrm{m\,s^{-2}}\) | 0.215965 | **0.111114** |
+| Static magnitude · \(\mathrm{m\,s^{-2}}\) | 0.078677 | **0.048051** |
+| Static direction · degrees | 1.173729 | **0.585285** |
+| New angle tilt · degrees | **3.988562** | 4.110647 |
+
+</div>
+
+\[\mathrm{RMSE}_{\mathrm{vec}}=\sqrt{\frac1N\sum_{i=1}^{N}\lVert\mathbf v_i-\mathbf a_i\rVert_2^2}.\]
+
+Static vector RMSE falls **48.6%**. Mean vector error falls from 0.201209 to 0.105644 \(\mathrm{m\,s^{-2}}\), reproducing the notebook closely. The \(-Z\) vector error worsens slightly: 0.139936 to 0.143284 \(\mathrm{m\,s^{-2}}\).
+
+### Which linearity test?
+
+The new angles test component predictions on a fixed-gravity sphere, not unrestricted homogeneity. The screen-up long-axis slope is
+
+\[\theta(\mathbf v)=\operatorname{atan2}\!\left(|v_y|,\sqrt{v_x^2+v_z^2}\right).\]
+
+The demonstrated benefit is the **static repeat test**. New tilt RMSE is 3.99° raw / 4.11° corrected; raised-only RMSE is 4.60° / 4.74°. Tilt improvement is not established, with or without nominal 0°. Earlier results (3.27° / 3.73°) remain recorded separately; references are unchanged.
+
+<div class="comparison-figures">
+<div class="figure">
+
+![Static validation](figures/static-vector.png)
+
+<p class="caption">Figure 1 · Static pose means. Improvement is not universal.</p>
+
+</div>
+<div class="figure">
+
+![Angle validation](figures/angle-tilt.png)
+
+<p class="caption">Figure 2 · New angle validation; nominal 0° rests on camera bumps.</p>
+
+</div>
+</div>
+
+<!-- page -->
+
+<div class="eyebrow">04 / Limits & responsibility</div>
+
+## Use, limits and responsibility
+
+The effective correction is supported for the tested nominal static positions. The measured angle references are accepted as supplied; this validation does not isolate sensor behaviour from alignment effects. No claim of unrestricted accuracy follows from a good static fit.
+
+### Where does the model fail?
+
+The shaking run is retained in full. Peak vector magnitude is **119.821** \(\mathrm{m\,s^{-2}}\); RMS magnitude deviation from \(g\) is **29.115** \(\mathrm{m\,s^{-2}}\). Without an independent dynamic reference, these are signal statistics—not acceleration errors, clipping evidence or proof of non-affine response.
+
+<div class="figure shaking-figure">
+
+![Shaking recording](../results/analysis-2026-10-23/04-shaking.png)
+
+<p class="caption">Figure 3 · Real changing specific force invalidates gravity-only tilt interpretation. Pixel-bin envelopes retain extremes.</p>
+
+</div>
+
+<div class="two-col">
+<div>
+
+### What the demonstration establishes
+
+The same exported calibration corrects fresh acceleration on shared timestamps and scales. Synthetic preview is labelled; reference comparisons require an independent target and still-phone confirmation. A 3D display hold is an intentional safeguard, not a measured sensor failure.
+
+</div>
+<div>
+
+### What remains unresolved
+
+Four distinct height settings now extend angle coverage, with one run each and nominal camera-supported 0°. Static repeats remain within-session. Ruler precision, case/rate consistency and physical rehearsal remain to document. A referenced drift or controlled-input experiment is needed for an affine-failure claim.
+
+</div>
+</div>
+
+Both authors retain negative results. Any tuning from these validation errors requires fresh held-out data for a new performance claim.
+
+<div class="contributions">
+
+### Both authors worked on the project
+
+**Melis Derveni** performed measurements and experiments and prepared the report, README, live demonstration and other deliverables. **Harsimranjeet Kaur** developed model training, testing and evaluation. Both discussed alternatives, advantages and limitations and jointly agreed the experimental approach, model and analysis decisions.
+
+</div>
+
+<div class="signatures">
+<div><div class="signature-line"></div>Melis Derveni · signature / date</div>
+<div><div class="signature-line"></div>Harsimranjeet Kaur · signature / date</div>
+</div>
+
+<div class="references">
+
+**Evidence & reproduction.** Original exports, 21–23 October 2026; user-confirmed geometry; Harsimranjeet's unchanged `main.ipynb`. Static: `python -m calib.analysis`. New angles: `python scripts/validate_new_angles.py`. Tests: `python -m pytest`. Raw data, frozen fit and prior results are preserved. Browser checks do not replace physical rehearsal.
+
+**Sources.** Course brief, *Sprint project: Is your phone linear?*; [phyphox sensor definitions](https://phyphox.org/docs/file-format/input/) and [remote API](https://phyphox.org/docs/remote-interface/). Calibration does not remove gravity, random noise or lost clipped information.
+
+</div>

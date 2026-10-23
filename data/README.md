@@ -1,6 +1,18 @@
 # Measurement manifest
 
-**Measurements collected on 21–22 October 2026.** The first export contains twelve static start/pause recordings. The second contains eight quiet angle runs and one shaking run. A scientifically referenced affine-limit result remains pending. The live viewer does not save or alter raw recordings.
+## New four-height validation: 23 October
+
+The new untouched export is `raw/Acceleration with g 2026-10-23 11-40-57/`, with four START/PAUSE runs of 29.76–31.55 s and **57,686 samples**. The user confirms one screen-up orientation throughout, heights **0, 4, 8 and 11 cm**, and the same **16 cm hypotenuse**. These give nominal references **0°, 14.4775°, 30°, 43.4325°**. Table rest is explicitly on camera bumps, so the first reference is nominal 0°, not an independently levelled phone body.
+
+```powershell
+python scripts/validate_new_angles.py
+```
+
+The command reads the existing fitted JSON and frozen static-training policy with exact input-hash checks. It does **no fitting or threshold tuning**. It reuses strict CSV/event validation and the original half-open acquisition boundaries. All original numeric strings/rows are retained in the ignored, reproducible `processed/angles-2026-10-23/validation.csv`, with provenance and reversible inclusion flags. The frozen policy retains **53,673 samples**; compact hashes, boundaries, counts and protocol are in [the acquisition audit](splits/angles-2026-10-23/README.md). New large generated data remains ignored; ignore rules are unchanged.
+
+See [new measured results](../results/angle-validation-2026-10-23/README.md) and its figures. Equal-weight four-run tilt RMSE is **3.988562° raw / 4.110647° corrected**. Raised-only sensitivity is **4.604338° / 4.740403°**, so the nominal-zero caveat does not change the conclusion. One acquisition per height provides four distinct settings, with no within-setting repeatability estimate. The raw export, frozen calibration/policy, notebook and earlier experiments are unchanged. No cause for the angle discrepancy is uniquely established.
+
+**Measurements collected on 21–23 October 2026.** The first export contains twelve static start/pause recordings. The second contains eight quiet angle runs and one shaking run; the third has the four new height settings described above. A scientifically referenced affine-limit result remains pending. Static fitting/first validation lives in [the original analysis](../results/analysis-2026-10-23/README.md); `python -m calib.analysis` generates separate masks without editing acquisition splits. New validation uses `python scripts/validate_new_angles.py` with the frozen fit. The live viewer does not save or alter raw recordings.
 
 ## Angle/shaking export: 22 October
 
@@ -37,7 +49,7 @@ The export metadata identifies Samsung SM-S938B (Galaxy S25 Ultra), Android 16, 
 
 Source: `raw/Acceleration with g 2026-10-21 17-43-29/Raw Data.csv`, with its original `meta/time.csv` and `meta/device.csv`. Acquisition was 17:33:33–17:43:20 UTC+02:00; the folder timestamp is the export time. The 172,447 data rows span 364.30 s of recorded sample time. Timestamps are strictly increasing and all fields are finite.
 
-The event log confirms **twelve recordings lasting 29.34–32.06 s**. The measured chronological order is **+Y, +Y, -Y, -Y, -X, -X, +X, +X, +Z, +Z, -Z, -Z**. Labels refer to the dominant measured component. All six directions are present; physical support alignment still needs confirmation before assigning exact reference vectors.
+The event log confirms **twelve recordings lasting 29.34–32.06 s**. The measured chronological order is **+Y, +Y, -Y, -Y, -X, -X, +X, +X, +Z, +Z, -Z, -Z**. Labels refer to the dominant measured component. All six directions are present. The user authorizes nominal ±g references and reports steady support with rear-camera contact screen-up and a button-bearing side; exact alignment remains uncertain.
 
 The first complete repeat of each pose is **training (86,323 samples)**; the second is **testing (86,124 samples)**. Acquisition events define exact half-open `[START, PAUSE)` intervals, rather than guesses at 30-second boundaries. Phyphox experiment time excludes the wall-clock pauses. No samples are dropped, duplicated, trimmed, smoothed, resampled, or corrected. Original timestamps and the five original numeric strings remain in the outputs; appended provenance columns identify the 1-based source data row (excluding the header), run, observed pose, repeat and split.
 

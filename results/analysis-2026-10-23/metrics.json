@@ -1,0 +1,85 @@
+{
+  "static_test": {
+    "aggregation": "Six pose means, equal weight; not sample RMSE or independent-session accuracy.",
+    "raw_vector_rmse_m_s2": 0.21596504463723054,
+    "raw_vector_mean_error_m_s2": 0.2012089200013414,
+    "raw_magnitude_rmse_m_s2": 0.07867703996527722,
+    "raw_magnitude_mean_error_m_s2": 0.07063269474642997,
+    "raw_direction_rmse_deg": 1.1737285725615112,
+    "raw_direction_mean_error_deg": 1.051739270072446,
+    "corrected_vector_rmse_m_s2": 0.11111356618574902,
+    "corrected_vector_mean_error_m_s2": 0.10564365050130521,
+    "corrected_magnitude_rmse_m_s2": 0.04805083819060016,
+    "corrected_magnitude_mean_error_m_s2": 0.04669834009140583,
+    "corrected_direction_rmse_deg": 0.5852847594708395,
+    "corrected_direction_mean_error_deg": 0.4993902729089276
+  },
+  "angle_validation": {
+    "raw_tilt_rmse_deg": 3.267286686789533,
+    "corrected_tilt_rmse_deg": 3.7263417558154455,
+    "aggregation": "Eight acquisition means, equal weight; unsigned long-axis slope; no full-vector ramp reference. Two distinct heights only."
+  },
+  "shaking": {
+    "samples": 14745,
+    "max_raw_magnitude_m_s2": 119.82106794295841,
+    "rms_raw_magnitude_deviation_from_g_m_s2": 29.11464024489946,
+    "interpretation": "Changing true specific force invalidates gravity-only inclination. No dynamic reference: no affine-error, clipping or failure claim."
+  },
+  "notebook_all_row_reproduction": {
+    "aggregation": "Six pose means, equal weight; not sample RMSE or independent-session accuracy.",
+    "raw_vector_rmse_m_s2": 0.2159130801866284,
+    "raw_vector_mean_error_m_s2": 0.2011634218682786,
+    "raw_magnitude_rmse_m_s2": 0.07866346714139834,
+    "raw_magnitude_mean_error_m_s2": 0.070618129049613,
+    "raw_direction_rmse_deg": 1.1734336214624195,
+    "raw_direction_mean_error_deg": 1.05150529395374,
+    "corrected_vector_rmse_m_s2": 0.11107484697232506,
+    "corrected_vector_mean_error_m_s2": 0.1056025287293459,
+    "corrected_magnitude_rmse_m_s2": 0.048059341246606144,
+    "corrected_magnitude_mean_error_m_s2": 0.046711680782729914,
+    "corrected_direction_rmse_deg": 0.5850091493904647,
+    "corrected_direction_mean_error_deg": 0.4991210953251421
+  },
+  "diagnostics": {
+    "rank": 4,
+    "singular_values": [
+      13.873435046880065,
+      13.873435046880063,
+      13.873435046880063,
+      2.449489742783178
+    ],
+    "design_condition": 5.66380614075023,
+    "dimensionless_design_condition": 1.732050807568877,
+    "S_condition": 1.0159506349186154
+  },
+  "source_sha256": {
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/Raw Data.csv": "b46d4e62a228f01cfe1b20f7dea1fc2f327b29eaafd71d4cde0d310454319d2c",
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/meta/time.csv": "35ca4eb5d0513c9d37acf8bfd55d030e01dbaa6fdf37b11d431e8c1d0c77c81a",
+    "data/raw/Acceleration with g 2026-10-21 17-43-29/meta/device.csv": "6bde6af06c394b374bb41b7f8967d3e03aa9a8898af5aa98c0e2a3d4739d58bb",
+    "data/processed/static-2026-10-21/training.csv": "c4a7e2bd8fb64e4fc407f06ad3846e03120c23ee1b30ca219960515afb66cb6a",
+    "data/processed/static-2026-10-21/testing.csv": "73bc13f77d24333bfa0a1708e05922d41eddda303650ddc12ee7e8427f4ffb17",
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/Raw Data.csv": "ed94f49c848a789b48b99596b1a6a079ac7f18df7ada78ed058ef6f173e330ac",
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/meta/time.csv": "e724397501244218bbc10dde2d44c5edb5a394b42758c645994088963152e766",
+    "data/raw/Acceleration with g 2026-10-22 10-55-51/meta/device.csv": "6bde6af06c394b374bb41b7f8967d3e03aa9a8898af5aa98c0e2a3d4739d58bb",
+    "data/splits/angles-2026-10-22/protocol.json": "a033434e1765bf4648ca05fad145fd29ffb927bdd8a70e63c099735bbd44ffb9",
+    "data/processed/angles-2026-10-22/training.csv": "01c2242064ab8424ad66cfa0bcfa2ec4cab6d9a2853ca2cea2dcd7cdbd5dc039",
+    "data/processed/angles-2026-10-22/testing.csv": "857f99b2218a619e1f83f8b19b35f84e0930104178f1e6a8bdbf6519e7a46be3",
+    "data/processed/angles-2026-10-22/limit.csv": "9aa86e36689d02e84ec68744f3b9a6456c86f9c770c651b65bf08c34c27f4a7b"
+  },
+  "notebook_sha256_unchanged": {
+    "main.ipynb": "15a8a3debec1300d42b86ad10939a77578ee9df173a462423eab4421f4d40371"
+  },
+  "versions": {
+    "python": "3.14.7",
+    "numpy": "2.5.4",
+    "matplotlib": "3.11.2"
+  },
+  "limitations": [
+    "Static tests are within-session repeats, not independent sessions.",
+    "Nominal +/-g references include support alignment error; fit is not intrinsic sensor identification.",
+    "Ruler resolution, contact uncertainty, case and user-selected rate remain unconfirmed.",
+    "Ramps use unsigned long-axis tilt only; signed full reference vectors are not independently established.",
+    "Only two ramp angles; no confirmed affine-model failure; live physical rehearsal pending.",
+    "Low variation is a rest heuristic, not proof of stationarity."
+  ]
+}

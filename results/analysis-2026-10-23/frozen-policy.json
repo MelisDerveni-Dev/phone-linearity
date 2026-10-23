@@ -1,0 +1,25 @@
+{
+  "training_session": "static-2026-10-21 / first within-session repeats",
+  "files": [
+    "data/processed/static-2026-10-21/training.csv"
+  ],
+  "training_sha256": "c4a7e2bd8fb64e4fc407f06ad3846e03120c23ee1b30ca219960515afb66cb6a",
+  "reference": "Nominal six +/-9.81 m/s^2 axes; placement uncertainty includes rear cameras and side buttons.",
+  "method": "Equal-weight pose means; forward least squares via NumPy SVD; notebook regression retained.",
+  "gravity_m_s2": 9.81,
+  "stability_threshold_m_s2": 0.05,
+  "stability_policy": "0.25 s local vector RMS; threshold=max(0.05,training median+8*1.4826*MAD); 1 s boundary trim, 1 s minimum interval; gaps >0.1 s break continuity.",
+  "diagnostics": {
+    "rank": 4,
+    "singular_values": [
+      13.873435046880065,
+      13.873435046880063,
+      13.873435046880063,
+      2.449489742783178
+    ],
+    "design_condition": 5.66380614075023,
+    "dimensionless_design_condition": 1.732050807568877,
+    "S_condition": 1.0159506349186154
+  },
+  "selection": "Frozen from training before loading test/angle samples; not tuned for held-out improvement."
+}

@@ -1,5 +1,4 @@
-"""Reserved for the Python calibration package after measurement collection.
+"""Affine accelerometer fitting and reproducible held-out analysis."""
+from .model import AffineCalibration
 
-The fit/apply class and analysis pipeline have deliberately not been implemented
-in this initial report-and-live-viewer milestone.
-"""
+__all__ = ["AffineCalibration"]
