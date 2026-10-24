@@ -1,0 +1,456 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"color-ground","type":"color","label":"Background","default":"#f3f1e9"},
+    {"id":"color-ink","type":"color","label":"Text","default":"#263e39"},
+    {"id":"color-teal","type":"color","label":"Calibrated accent","default":"#357a71"},
+    {"id":"color-coral","type":"color","label":"Raw / warning accent","default":"#b96145"},
+    {"id":"font-display","type":"string","label":"Display font","default":"Playfair Display"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/data.js"></script>
+    <style>
+      :root {
+        --ground: var(--color-ground, #f3f1e9);
+        --card: #faf9f3;
+        --ink: var(--color-ink, #263e39);
+        --muted: #55625b;
+        --line: #d0d5c6;
+        --teal: var(--color-teal, #357a71);
+        --teal-text: #2b6a62;
+        --coral: var(--color-coral, #b96145);
+        --coral-text: #a54f35;
+        --brass: #9a783a;
+        --brass-text: #7d5f2a;
+        --display: var(--font-display, "Playfair Display"), Georgia, serif;
+        --mono: "IBM Plex Mono", Consolas, monospace;
+        --sans: "Inter", "Segoe UI", Arial, sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); font-family: var(--sans); color: var(--ink); }
+
+      /* ground: faint lab-paper grid plus two audio-reactive glows */
+      #grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(123,139,112,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(123,139,112,0.16) 1px, transparent 1px); background-size: 48px 48px; }
+      #glow-teal { position: absolute; inset: 0; background: radial-gradient(ellipse 900px 600px at 30% 40%, rgba(53,122,113,0.20), rgba(53,122,113,0) 70%); opacity: 0.5; }
+      #glow-brass { position: absolute; inset: 0; background: radial-gradient(ellipse 800px 520px at 78% 70%, rgba(154,120,58,0.20), rgba(154,120,58,0) 70%); opacity: 0.5; }
+
+      .scene { position: absolute; inset: 0; }
+      .stage { position: absolute; inset: 0; }
+
+      .w { display: inline-block; }
+      .eyebrow { font-family: var(--mono); font-size: 28px; letter-spacing: 0.22em; color: var(--brass-text); text-transform: uppercase; }
+      .display { font-family: var(--display); font-weight: 400; letter-spacing: -0.025em; color: var(--ink); line-height: 1.04; }
+      .accent-teal { color: var(--teal-text); font-style: italic; }
+      .accent-coral { color: var(--coral); font-style: italic; }
+      .rule { position: absolute; height: 2px; background: var(--brass); }
+
+      /* ---------- Scene 1 ---------- */
+      #s1-eyebrow { position: absolute; left: 0; right: 0; top: 214px; text-align: center; }
+      #s1-title { position: absolute; left: 0; right: 0; top: 290px; text-align: center; font-size: 150px; white-space: nowrap; }
+      #s1-title .w { margin: 0 18px; }
+      #s1-diagram { position: absolute; left: 660px; top: 590px; width: 600px; height: 250px; }
+      #s1-line { position: absolute; left: 0; right: 0; top: 880px; text-align: center; font-family: var(--display); font-style: italic; font-size: 46px; color: var(--ink); }
+
+      /* ---------- Scene 2 ---------- */
+      #s2-title { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 104px; white-space: nowrap; }
+      #s2-title .w { margin: 0 14px; }
+      #s2-eq { position: absolute; left: 0; right: 0; top: 262px; text-align: center; font-family: var(--display); font-style: italic; font-size: 200px; line-height: 1.1; letter-spacing: -0.02em; color: var(--ink); white-space: nowrap; }
+      #s2-eq .op { color: var(--brass); font-style: normal; margin: 0 26px; }
+      #s2-eq .b { color: var(--coral); }
+      #s2-eq-caption { position: absolute; left: 0; right: 0; top: 520px; text-align: center; }
+      #s2-eq-caption .eyebrow { font-size: 28px; color: var(--muted); }
+      #s2-poses { position: absolute; left: 252px; top: 610px; width: 1416px; height: 270px; }
+      .pose { position: absolute; top: 0; width: 220px; height: 260px; }
+      .pose svg { width: 220px; height: 260px; overflow: visible; }
+      #s2-label { position: absolute; left: 0; right: 0; top: 896px; text-align: center; font-family: var(--sans); font-size: 38px; font-weight: 500; color: var(--ink); }
+      #s2-label em { font-family: var(--display); font-style: italic; }
+
+      /* ---------- Scene 3 ---------- */
+      #s3-left { position: absolute; left: 192px; top: 300px; width: 700px; }
+      #s3-left .eyebrow { font-size: 28px; line-height: 1.5; color: var(--muted); }
+      #s3-numbers { margin-top: 40px; font-family: var(--display); font-size: 168px; line-height: 1; letter-spacing: -0.03em; white-space: nowrap; }
+      #s3-raw { color: var(--coral); display: inline-block; }
+      #s3-arrow { display: inline-block; color: var(--brass); margin: 0 26px; font-size: 110px; }
+      #s3-cal { color: var(--teal-text); display: inline-block; }
+      #s3-unit { margin-top: 14px; font-family: var(--mono); font-size: 34px; color: var(--ink); }
+      #s3-cap { margin-top: 26px; font-family: var(--sans); font-size: 34px; line-height: 1.4; color: var(--ink); width: 790px; }
+      #s3-card { position: absolute; left: 980px; top: 200px; width: 748px; height: 680px; background: var(--card); border: 2px solid var(--line); border-radius: 10px; box-shadow: 0 6px 30px rgba(38,62,57,0.10); }
+      #s3-card .head { position: absolute; left: 36px; top: 30px; right: 36px; }
+      #s3-card .head .eyebrow { font-size: 28px; color: var(--muted); }
+      #s3-card .head h3 { margin-top: 10px; font-family: var(--display); font-weight: 400; font-size: 46px; letter-spacing: -0.02em; }
+      #s3-chart { position: absolute; left: 36px; top: 180px; width: 676px; height: 360px; border-bottom: 2px solid var(--ink); }
+      .group { position: absolute; bottom: 0; width: 100px; height: 360px; }
+      .bar { position: absolute; bottom: 0; width: 42px; border-radius: 3px 3px 0 0; transform-origin: 50% 100%; }
+      .bar.raw { left: 4px; background: var(--coral); }
+      .bar.cal { left: 52px; background: var(--teal); }
+      .glabel { position: absolute; width: 100px; text-align: center; top: 554px; font-family: var(--mono); font-size: 30px; color: var(--ink); }
+      #s3-legend { position: absolute; left: 36px; bottom: 28px; display: flex; gap: 34px; font-family: var(--mono); font-size: 28px; color: var(--ink); }
+      #s3-legend span::before { content: ""; display: inline-block; width: 18px; height: 18px; margin-right: 10px; vertical-align: -2px; border-radius: 3px; }
+      #s3-legend .l-raw::before { background: var(--coral); }
+      #s3-legend .l-cal::before { background: var(--teal); }
+
+      /* ---------- Scene 4a ---------- */
+      #s4a-title { position: absolute; left: 0; right: 0; top: 130px; text-align: center; font-size: 128px; white-space: nowrap; }
+      #s4a-title .w { margin: 0 16px; }
+      #s4-card { position: absolute; left: 192px; top: 400px; width: 1536px; height: 540px; background: var(--card); border: 2px solid var(--line); border-radius: 10px; box-shadow: 0 6px 30px rgba(38,62,57,0.10); }
+      #s4-card .eyebrow { position: absolute; left: 40px; top: 28px; font-size: 28px; color: var(--muted); }
+      #s4-plot { position: absolute; left: 68px; top: 100px; width: 1400px; height: 360px; }
+      #s4-plot svg { width: 1400px; height: 360px; overflow: visible; }
+      #s4-peak { position: absolute; font-family: var(--mono); font-size: 30px; font-weight: 600; color: var(--coral-text); white-space: nowrap; }
+      #s4-rest { position: absolute; font-family: var(--mono); font-size: 28px; color: var(--teal-text); white-space: nowrap; }
+
+      /* ---------- Scene 4b ---------- */
+      #s4b-gear { position: absolute; left: 860px; top: 224px; width: 200px; height: 200px; }
+      #s4b-gear svg { width: 200px; height: 200px; fill: none; stroke: var(--ink); stroke-width: 1.8; }
+      #s4b-name { position: absolute; left: 0; right: 0; top: 452px; text-align: center; font-size: 122px; white-space: nowrap; }
+      #s4b-name .w { margin: 0 18px; }
+      #s4b-tag { position: absolute; left: 0; right: 0; top: 636px; text-align: center; font-family: var(--mono); font-size: 32px; letter-spacing: 0.16em; color: var(--brass-text); text-transform: uppercase; }
+      #s4b-credit { position: absolute; left: 0; right: 0; top: 944px; text-align: center; font-family: var(--sans); font-size: 28px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="21.06"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Ground (untimed, full-bleed) -->
+      <div id="grid"></div>
+      <div id="glow-teal"></div>
+      <div id="glow-brass"></div>
+
+      <!-- ===== Scene 1: the question (0 to 4.23) ===== -->
+      <section id="s1" class="clip scene" data-start="0" data-duration="4.23" data-track-index="1" data-track-kind="graphics">
+        <div id="s1-stage" class="stage">
+          <div id="s1-eyebrow" class="eyebrow">Observe. Question. Calibrate.</div>
+          <h1 id="s1-title" class="display">
+            <span class="w">Is</span><span class="w">your</span><span class="w">phone</span><span class="w accent-teal">linear?</span>
+          </h1>
+          <div id="s1-diagram">
+            <svg viewBox="0 0 600 250" width="600" height="250" aria-hidden="true">
+              <line id="s1-table" x1="40" y1="212" x2="560" y2="212" stroke="#9a783a" stroke-width="4" stroke-linecap="round"/>
+              <g id="s1-phone">
+                <rect x="140" y="186" width="320" height="24" rx="9" fill="#faf9f3" stroke="#263e39" stroke-width="4"/>
+                <rect x="150" y="190" width="300" height="5" rx="2.5" fill="#357a71"/>
+              </g>
+              <g id="s1-arrow">
+                <line x1="300" y1="170" x2="300" y2="62" stroke="#357a71" stroke-width="6" stroke-linecap="round"/>
+                <polygon points="300,26 276,70 324,70" fill="#357a71"/>
+              </g>
+              <text id="s1-g" x="346" y="104" font-family="IBM Plex Mono, monospace" font-size="34" font-weight="600" fill="#2b6a62">9.81 m/s²</text>
+            </svg>
+          </div>
+          <div id="s1-line">A phone at rest feels only gravity.</div>
+        </div>
+      </section>
+
+      <!-- ===== Scene 2: not quite (4.23 to 10.54) ===== -->
+      <section id="s2" class="clip scene" data-start="4.23" data-duration="6.31" data-track-index="1" data-track-kind="graphics">
+        <div id="s2-stage" class="stage">
+          <h2 id="s2-title" class="display">
+            <span class="w s2t-a">Not</span><span class="w s2t-a">quite.</span><span class="w s2t-b accent-teal">It’s</span><span class="w s2t-b accent-teal">affine.</span>
+          </h2>
+          <div id="s2-eq" aria-label="m equals S a plus b">
+            <span id="eq-m">m</span><span class="op">=</span><span id="eq-s">S</span><span id="eq-a" style="margin-left:14px">a</span><span class="op">+</span><span id="eq-b" class="b">b</span>
+          </div>
+          <div id="s2-eq-caption"><span class="eyebrow">A straight line that misses the origin</span></div>
+
+          <div id="s2-poses">
+            <!-- six resting poses; the green arrow is the axis pointing straight up (reads +9.81 m/s²) -->
+            <div class="pose" id="pose-1" style="left:0">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="40" y="206" width="140" height="18" rx="6" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="45" y="209" width="130" height="4" rx="2" fill="#357a71"/>
+                <line x1="110" y1="190" x2="110" y2="96" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,66 92,104 128,104" fill="#357a71"/>
+                <text x="124" y="150" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">+z</text>
+              </svg>
+            </div>
+            <div class="pose" id="pose-2" style="left:239px">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="40" y="206" width="140" height="18" rx="6" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="45" y="217" width="130" height="4" rx="2" fill="#357a71"/>
+                <line x1="110" y1="190" x2="110" y2="96" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,66 92,104 128,104" fill="#357a71"/>
+                <text x="124" y="150" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">−z</text>
+              </svg>
+            </div>
+            <div class="pose" id="pose-3" style="left:478px">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="82" y="96" width="56" height="128" rx="10" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="88" y="102" width="44" height="116" rx="5" fill="#dfeae4"/>
+                <circle cx="110" cy="108" r="3" fill="#263e39"/>
+                <line x1="110" y1="82" x2="110" y2="34" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,6 94,40 126,40" fill="#357a71"/>
+                <text x="124" y="64" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">+y</text>
+              </svg>
+            </div>
+            <div class="pose" id="pose-4" style="left:717px">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="82" y="96" width="56" height="128" rx="10" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="88" y="102" width="44" height="116" rx="5" fill="#dfeae4"/>
+                <circle cx="110" cy="214" r="3" fill="#263e39"/>
+                <line x1="110" y1="82" x2="110" y2="34" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,6 94,40 126,40" fill="#357a71"/>
+                <text x="124" y="64" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">−y</text>
+              </svg>
+            </div>
+            <div class="pose" id="pose-5" style="left:956px">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="50" y="166" width="120" height="58" rx="10" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="56" y="172" width="108" height="46" rx="5" fill="#dfeae4"/>
+                <circle cx="62" cy="195" r="3" fill="#263e39"/>
+                <line x1="110" y1="152" x2="110" y2="80" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,50 94,86 126,86" fill="#357a71"/>
+                <text x="124" y="116" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">+x</text>
+              </svg>
+            </div>
+            <div class="pose" id="pose-6" style="left:1195px">
+              <svg viewBox="0 0 220 260" aria-hidden="true">
+                <line x1="20" y1="226" x2="200" y2="226" stroke="#9a783a" stroke-width="3"/>
+                <rect x="50" y="166" width="120" height="58" rx="10" fill="#faf9f3" stroke="#263e39" stroke-width="3"/>
+                <rect x="56" y="172" width="108" height="46" rx="5" fill="#dfeae4"/>
+                <circle cx="158" cy="195" r="3" fill="#263e39"/>
+                <line x1="110" y1="152" x2="110" y2="80" stroke="#357a71" stroke-width="5" stroke-linecap="round"/><polygon points="110,50 94,86 126,86" fill="#357a71"/>
+                <text x="124" y="116" font-family="IBM Plex Mono, monospace" font-size="30" font-weight="600" fill="#2b6a62">−x</text>
+              </svg>
+            </div>
+          </div>
+          <div id="s2-label">Six resting poses fit <em>S</em> and <em>b</em>.</div>
+        </div>
+      </section>
+
+      <!-- ===== Scene 3: the proof (10.54 to 15.28) ===== -->
+      <section id="s3" class="clip scene" data-start="10.54" data-duration="4.74" data-track-index="1" data-track-kind="graphics">
+        <div id="s3-stage" class="stage">
+          <div id="s3-left">
+            <div id="s3-eyebrow" class="eyebrow">Typical error, on poses<br>the fit never saw</div>
+            <div id="s3-numbers"><span id="s3-raw">0.22</span><span id="s3-arrow">→</span><span id="s3-cal">0.11</span></div>
+            <div id="s3-unit">m/s²</div>
+            <div id="s3-cap">Calibrated vs uncalibrated, roughly halved.</div>
+          </div>
+          <div id="s3-card">
+            <div class="head">
+              <div class="eyebrow">Error · six test poses</div>
+              <h3>Distance from true gravity</h3>
+            </div>
+            <div id="s3-chart"></div>
+            <div id="s3-legend"><span class="l-raw">Uncalibrated</span><span class="l-cal">Calibrated</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Scene 4a: where it breaks (15.28 to 18.44) ===== -->
+      <section id="s4a" class="clip scene" data-start="15.28" data-duration="3.16" data-track-index="1" data-track-kind="graphics">
+        <div id="s4a-stage" class="stage">
+          <h2 id="s4a-title" class="display">
+            <span class="w">Shake</span><span class="w">it.</span><span class="w accent-coral">The</span><span class="w accent-coral">model</span><span class="w accent-coral">fails.</span>
+          </h2>
+          <div id="s4-card">
+            <div class="eyebrow">SHAKING · 30 SECONDS · TOTAL READING</div>
+            <div id="s4-plot">
+              <svg id="s4-svg" viewBox="0 0 1400 360" aria-hidden="true">
+                <line id="s4-rest-line" x1="0" y1="0" x2="1400" y2="0" stroke="#357a71" stroke-width="4" stroke-dasharray="14 10"/>
+                <path id="s4-env" d="" fill="#b96145" fill-opacity="0.78" stroke="#b96145" stroke-width="2"/>
+              </svg>
+              <div id="s4-peak">up to 120 m/s²</div>
+              <div id="s4-rest">at rest · 9.81</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Scene 4b: the mark (18.44 to 21.06) ===== -->
+      <section id="s4b" class="clip scene" data-start="18.44" data-duration="2.62" data-track-index="1" data-track-kind="graphics">
+        <div id="s4b-stage" class="stage">
+          <div id="s4b-gear">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M27 3h10l2 9 6 3 9-3 5 9-7 6v10l7 6-5 9-9-3-6 3-2 9H27l-2-9-6-3-9 3-5-9 7-6V27l-7-6 5-9 9 3 6-3Z"/><circle cx="32" cy="32" r="12"/><circle cx="32" cy="32" r="4"/></svg>
+          </div>
+          <h2 id="s4b-name" class="display"><span class="w">The</span><span class="w">Affine</span><span class="w accent-teal">Observatory</span></h2>
+          <div id="s4b-tag">A little curiosity. A more precise world.</div>
+          <div id="s4b-credit">Music: Sascha Ende, ende.app (CC BY 4.0)</div>
+        </div>
+      </section>
+
+      <!-- ===== Audio ===== -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3" data-start="0" data-duration="21.06" data-track-index="10" data-volume="0.66" data-fade-in="0.5" data-fade-out="1.6"></audio>
+      <!-- scene seams -->
+      <audio id="sfx-seam1" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="4.26" data-duration="0.2" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-seam2" src="assets/sfx/impact/impactSoft_medium_004.ogg" data-start="10.57" data-duration="0.16" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-seam3" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="15.31" data-duration="0.2" data-track-index="11" data-volume="0.45"></audio>
+      <!-- equation lands -->
+      <audio id="sfx-eq" src="assets/sfx/impact/impactSoft_medium_004.ogg" data-start="6.37" data-duration="0.16" data-track-index="11" data-volume="0.4"></audio>
+      <!-- six poses on the beat grid -->
+      <audio id="sfx-pose1" src="assets/sfx/interface/click_003.ogg" data-start="7.43" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pose2" src="assets/sfx/interface/click_003.ogg" data-start="7.95" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pose3" src="assets/sfx/interface/click_003.ogg" data-start="8.47" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pose4" src="assets/sfx/interface/click_003.ogg" data-start="8.99" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pose5" src="assets/sfx/interface/click_003.ogg" data-start="9.53" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-pose6" src="assets/sfx/interface/click_003.ogg" data-start="10.04" data-duration="0.05" data-track-index="12" data-volume="0.5"></audio>
+      <!-- bars on alternate beats, payoff on 0.11 -->
+      <audio id="sfx-bar1" src="assets/sfx/interface/click_003.ogg" data-start="11.09" data-duration="0.05" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-bar2" src="assets/sfx/interface/click_003.ogg" data-start="12.15" data-duration="0.05" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-bar3" src="assets/sfx/interface/click_003.ogg" data-start="13.21" data-duration="0.05" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-payoff" src="assets/sfx/interface/bong_001.ogg" data-start="13.73" data-duration="0.13" data-track-index="13" data-volume="0.5"></audio>
+      <!-- the mark -->
+      <audio id="sfx-mark" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="18.47" data-duration="1.5" data-track-index="13" data-volume="0.45"></audio>
+    </div>
+
+    <script>
+      const D = window.BRAG;
+      const FPS = 30;
+
+      /* ---------- static layout from real data (set once, before the timeline) ---------- */
+      // Scene 3: six bar pairs from the real test results
+      (function buildBars() {
+        const chart = document.getElementById("s3-chart");
+        const scale = 357 / 0.34; // px per m/s^2 (peak 0.334 fills the chart)
+        D.poses.forEach((p, i) => {
+          const g = document.createElement("div");
+          g.className = "group";
+          g.id = "g" + i;
+          g.style.left = 8 + i * 110 + "px";
+          g.innerHTML =
+            '<div class="bar raw" id="raw' + i + '" style="height:' + Math.round(D.rawError[i] * scale) + 'px"></div>' +
+            '<div class="bar cal" id="cal' + i + '" style="height:' + Math.round(D.calError[i] * scale) + 'px"></div>';
+          chart.appendChild(g);
+          // axis labels sit below the baseline, as siblings of the chart (inside the card)
+          const lab = document.createElement("div");
+          lab.className = "glabel";
+          lab.id = "lab" + i;
+          lab.style.left = 36 + 8 + i * 110 + "px";
+          lab.textContent = p.replace("-", "−").toLowerCase();
+          document.getElementById("s3-card").appendChild(lab);
+        });
+        document.getElementById("s3-raw").textContent = D.rawRmse.toFixed(2);
+        document.getElementById("s3-cal").textContent = D.calRmse.toFixed(2);
+      })();
+
+      // Scene 4: the real shaking envelope as a filled band, y axis 0..125 m/s^2
+      const PLOT_W = 1400, PLOT_H = 360, Y_MAX = 125;
+      const yOf = (v) => PLOT_H - (v / Y_MAX) * PLOT_H;
+      let peakX = 0;
+      (function buildEnvelope() {
+        const n = D.shake.hi.length;
+        const top = [], bottom = [];
+        let best = -1;
+        for (let k = 0; k < n; k++) {
+          const x = (k / (n - 1)) * PLOT_W;
+          top.push(x.toFixed(1) + "," + yOf(D.shake.hi[k]).toFixed(1));
+          bottom.push(x.toFixed(1) + "," + yOf(D.shake.lo[k]).toFixed(1));
+          if (D.shake.hi[k] > best) { best = D.shake.hi[k]; peakX = x; }
+        }
+        document.getElementById("s4-env").setAttribute("d", "M" + top.join(" L") + " L" + bottom.reverse().join(" L") + " Z");
+        const restY = yOf(D.shake.rest);
+        const line = document.getElementById("s4-rest-line");
+        line.setAttribute("y1", restY); line.setAttribute("y2", restY);
+        const peak = document.getElementById("s4-peak");
+        peak.style.left = Math.min(peakX + 44, PLOT_W - 300) + "px";
+        peak.style.top = yOf(best) - 6 + "px";
+        const rest = document.getElementById("s4-rest");
+        rest.style.left = "10px";
+        rest.style.top = restY + 16 + "px";
+      })();
+
+      /* ---------- timeline ---------- */
+      const tl = gsap.timeline({ paused: true });
+      const BLUR_IN = { opacity: 0, filter: "blur(12px)" };
+      const BLUR_ON = { opacity: 1, filter: "blur(0px)" };
+      const words = (sel, t, step, dur) =>
+        tl.fromTo(sel, BLUR_IN, { ...BLUR_ON, duration: dur || 0.2, ease: "power3.out", stagger: step || 0.07 }, t);
+      const swapOut = (sel, end, dur) =>
+        tl.to(sel, { opacity: 0, filter: "blur(10px)", duration: dur || 0.3, ease: "power2.in" }, end - (dur || 0.3));
+
+      /* Scene 1 (0 to 4.23): the question. Hook words 0.35 s; title holds ~3.2 s */
+      tl.fromTo("#s1-eyebrow", BLUR_IN, { ...BLUR_ON, duration: 0.35, ease: "power2.out" }, 0.12);
+      words("#s1-title .w", 0.35, 0.09, 0.22);
+      tl.fromTo("#s1-table", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0.9);
+      tl.fromTo("#s1-phone", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 0.95);
+      tl.fromTo("#s1-arrow", { opacity: 0, scaleY: 0.2, transformOrigin: "50% 100%" }, { opacity: 1, scaleY: 1, duration: 0.4, ease: "expo.out" }, 1.15);
+      tl.fromTo("#s1-g", BLUR_IN, { ...BLUR_ON, duration: 0.25, ease: "power3.out" }, 1.35);
+      tl.fromTo("#s1-line", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 1.25);
+      swapOut("#s1-stage", 4.23);
+
+      /* Scene 2 (4.23 to 10.54): not quite */
+      // beat-locked: 4.23s (scene seam on a strong cue)
+      words("#s2-title .s2t-a", 4.5, 0.12, 0.22);
+      // beat-grid: second half of the title on 5.28s
+      words("#s2-title .s2t-b", 5.28, 0.12, 0.22);
+      // beat-locked: 6.34s (the equation lands on a strong cue)
+      tl.fromTo("#s2-eq", { opacity: 0, filter: "blur(14px)", scale: 1.06 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.5, ease: "expo.out" }, 6.34);
+      tl.fromTo("#s2-eq-caption", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 6.86);
+      // beat-grid: poses at 7.40, 7.92, 8.44, 8.96, 9.50, 10.01
+      [7.4, 7.92, 8.44, 8.96, 9.5, 10.01].forEach((t, i) => {
+        tl.fromTo("#pose-" + (i + 1), { opacity: 0, filter: "blur(8px)", y: 22 }, { opacity: 1, filter: "blur(0px)", y: 0, duration: 0.35, ease: "power3.out" }, t);
+      });
+      tl.fromTo("#s2-label", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 7.4);
+      swapOut("#s2-stage", 10.54);
+
+      /* Scene 3 (10.54 to 15.28): the proof */
+      // beat-locked: 10.54s (card enters on a strong cue)
+      tl.fromTo("#s3-card", { opacity: 0, filter: "blur(10px)", scale: 1.03 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.5, ease: "power3.out" }, 10.54);
+      tl.fromTo("#s3-eyebrow", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 10.7);
+      tl.fromTo("#s3-raw", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 10.85);
+      tl.fromTo("#s3-unit", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 11.0);
+      tl.fromTo("#s3-cap", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 11.1);
+      // beat-grid: bar pairs on 11.06, 11.60, 12.12, 12.65, 13.18, 13.70
+      [11.06, 11.6, 12.12, 12.65, 13.18, 13.7].forEach((t, i) => {
+        tl.fromTo("#raw" + i, { scaleY: 0 }, { scaleY: 1, duration: 0.45, ease: "power3.out" }, t);
+        tl.fromTo("#cal" + i, { scaleY: 0 }, { scaleY: 1, duration: 0.45, ease: "power3.out" }, t + 0.14);
+        tl.fromTo("#lab" + i, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, t);
+      });
+      tl.fromTo("#s3-arrow", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 13.45);
+      tl.fromTo("#s3-cal", { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.4, ease: "expo.out" }, 13.7);
+      swapOut("#s3-stage", 15.28);
+
+      /* Scene 4a (15.28 to 18.44): where it breaks */
+      tl.fromTo("#s4-card", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 15.3);
+      words("#s4a-title .w", 15.36, 0.1, 0.22);
+      tl.fromTo("#s4-rest-line", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 15.6);
+      tl.fromTo("#s4-rest", BLUR_IN, { ...BLUR_ON, duration: 0.25, ease: "power3.out" }, 15.7);
+      // the real 30 s recording sweeps left to right over 2.0 s
+      tl.fromTo("#s4-svg", { clipPath: "inset(-20px 100% -20px 0px)" }, { clipPath: "inset(-20px 0% -20px 0px)", duration: 2.0, ease: "power1.inOut" }, 15.75);
+      const sweepAt = 15.75 + 2.0 * Math.pow(peakX / PLOT_W, 0.9) + 0.05; // peak label as the sweep passes the maximum
+      tl.fromTo("#s4-peak", BLUR_IN, { ...BLUR_ON, duration: 0.25, ease: "power3.out" }, Math.min(sweepAt, 17.2));
+      swapOut("#s4a-stage", 18.44);
+
+      /* Scene 4b (18.44 to 21.06): the mark. Lands on beat 18.44 */
+      tl.fromTo("#s4b-gear", { opacity: 0, scale: 0.92, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "expo.out" }, 18.44);
+      words("#s4b-name .w", 18.56, 0.12, 0.25);
+      tl.fromTo("#s4b-tag", BLUR_IN, { ...BLUR_ON, duration: 0.3, ease: "power3.out" }, 18.78);
+      tl.fromTo("#s4b-credit", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 18.46);
+
+      /* ---------- audio-reactive ground (subtle): a pure function of time ---------- */
+      const glowTeal = document.getElementById("glow-teal");
+      const glowBrass = document.getElementById("glow-brass");
+      const cardEdges = [document.getElementById("s3-card"), document.getElementById("s4-card")];
+      const clampIdx = (arr, i) => arr[Math.max(0, Math.min(arr.length - 1, i))];
+      const driver = { t: 0 };
+      tl.to(driver, {
+        t: 21.06,
+        duration: 21.06,
+        ease: "none",
+        onUpdate() {
+          const i = Math.round(driver.t * FPS);
+          const rms = clampIdx(D.audio.rms, i);
+          const bass = clampIdx(D.audio.bass, i);
+          glowTeal.style.opacity = (0.45 + 0.45 * bass).toFixed(3);
+          glowBrass.style.opacity = (0.4 + 0.4 * rms).toFixed(3);
+          const e = (0.08 + 0.06 * bass).toFixed(3);
+          cardEdges.forEach((c) => (c.style.boxShadow = "0 6px 30px rgba(38,62,57," + e + ")"));
+        },
+      }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

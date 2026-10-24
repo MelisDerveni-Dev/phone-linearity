@@ -1,0 +1,1 @@
+Is your phone linear? Not quite, it's affine. Six resting poses roughly halved our accelerometer's error on poses the fit never saw; shake it, and the model fails.

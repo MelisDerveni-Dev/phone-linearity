@@ -30,3 +30,6 @@ calibration/params.json
 
 # Default output of `python -m calib apply` (large per-sample CSVs; reproducible)
 results/applied/
+
+# HyperFrames render caches and local editing/session state (source and final media are versioned).
+brag-output/composition/.hyperframes/
